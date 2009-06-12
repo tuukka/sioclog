@@ -1,0 +1,47 @@
+
+A nice IRC logging system that provides Linked Data using SIOC and FOAF.
+
+
+Previous services
+-----------------
+
+ * SIOC logging: http://tuukka.iki.fi/irclogs
+ * FOAF logging: http://chatlogs.planetrdf.com/swig/
+ * Huge logging: http://searchirc.com/
+
+Software:
+ * SIOC: screen, irchub, timestamplog, irc2rdf, logindex.cgi, irc-sioc.cgi
+ * FOAF: loggerbot
+ * lorebot links registered users to FOAF: http://crschmidt.net/semweb/rdfbot/
+ * chump bot keeps a scratchpad: http://swig.xmlhack.com/
+
+Technologies:
+ * Twisted Python: the basis for SIOC logging, chump bot
+ * Perl: loggerbot
+
+ * RDF: irc2rdf, loggerbot
+ * XML: chump bot
+ * RSS/RDF: chump bot
+
+
+Features
+--------
+
+Existing:
+ * Content-negotiated HTML and SIOC documents as Linked Data
+ * Simple deployment
+ * Support all typical IRC features (ACTION, QUIT)
+
+New:
+ * Vocabulary and URI schemes that everyone is happy with
+  * Model actions, joins and parts in SIOC
+  * Track nickserv registrations
+ * Nice UI
+ * Complete content negotiation of HTML, RDF-XML and Turtle
+
+
+Design issues
+-------------
+ * Use of RDBMS, triple store, virtuoso
+ * Division into components
+

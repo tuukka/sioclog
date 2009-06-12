@@ -1,0 +1,19 @@
+
+sioclog is a system for logging and displaying activity on IRC channels.
+
+Installation
+------------
+
+1. Copy sioclog.cgi to a place where a HTTP server is configured to execute it.
+2. Edit sioclog.cgi to match the location of the rest of the files.
+3. Start sioclogbot.py in background - probably using the screen command.
+
+Parts
+-----
+
+sioclogbot.py - an IRC bot that logs what it sees into a log file
+sioclogwww.py - a WWW interface for displaying logs
+sioclog.cgi - a CGI script for running the WWW interface on a HTTP server
+
+ircbase.py - a module for dealing with IRC connections and data
+channellog.py - a module for filtering and rendering streams of IRC data
