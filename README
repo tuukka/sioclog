@@ -4,6 +4,7 @@ sioclog is a system for logging and displaying activity on IRC channels.
 Installation
 ------------
 
+0. Fetch sioclog: git clone git://github.com/tuukka/sioclog.git
 1. Copy sioclog.cgi to a place where a HTTP server is configured to execute it.
 2. Edit sioclog.cgi to match the location of the rest of the files.
 3. Start sioclogbot.py in background - probably using the screen command.

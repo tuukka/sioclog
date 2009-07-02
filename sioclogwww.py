@@ -173,5 +173,7 @@ rm=searchbox_009180828701492049973%3A6ly79qxejks&lang=en"></script> -->
     print """</tbody></table>
 <p>Older logs are still at <a href="http://tuukka.iki.fi/tmp/logindex">http://tuukka.iki.fi/tmp/logindex</a>.
 Hopefully they'll be merged here soon.</p>
+
+<p>Rendered by <a href="http://github.com/tuukka/sioclog/blob/master/sioclogwww.py">sioclogwww.py</a>.</p>
 </body>
 </html>"""

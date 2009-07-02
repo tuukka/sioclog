@@ -248,6 +248,8 @@ SIOC.
     def close(self):
         print """</table>
 <p>Back to channel and daily index: <a href="/index">content-negotiated</a> <a href="/index.html">html</a> <a href="/index.turtle">turtle</a></p>
+
+<p>Rendered by <a href="http://github.com/tuukka/sioclog/blob/master/sioclogwww.py">sioclogwww.py</a>.</p>
 </body>
 </html>"""
 
