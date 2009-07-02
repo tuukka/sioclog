@@ -12,40 +12,24 @@ import cgi, os
 from channellog import OffFilter, ChannelFilter, TimeFilter, HtmlSink, TurtleSink, RawSink, ChannelsAndDaysSink, run
 
 def runcgi(logfile):
-    try:
-        REQUEST_URI = os.environ['REQUEST_URI']
-    except KeyError:
-        REQUEST_URI = ""
-    try:
-        HTTP_ACCEPT = os.environ['HTTP_ACCEPT']
-    except KeyError:
-        HTTP_ACCEPT = ""
-
+    HTTP_HOST = os.environ.get('HTTP_HOST', "")
+    SERVER_PORT = os.environ.get('SERVER_PORT', "")
+    REQUEST_URI = os.environ.get('REQUEST_URI', "")
+    HTTP_ACCEPT = os.environ.get('HTTP_ACCEPT', "")
     PATH_INFO = os.environ.get('PATH_INFO', "")
 
 #    query = cgi.FieldStorage()
 #    channel = query.getfirst("channel", "")
 #    timeprefix = query.getfirst("time", "")
 
-    parts = PATH_INFO.split('/')
-    if len(parts) > 1:
-        channel = parts[1]
-    else:
-        channel = ""
-    if len(parts) > 2:
-        timeprefix = parts[2]
-    else:
-        timeprefix = ""
-
-    title = "%s-%s" % (channel, timeprefix)
-    selfuri = REQUEST_URI
-
-    extension = REQUEST_URI.split(".")[-1]
     if REQUEST_URI.endswith(".html"):
+        extension = ".html"
         format = "html"
     elif REQUEST_URI.endswith(".turtle"):
+        extension = ".turtle"
         format = "turtle"
     elif REQUEST_URI.endswith(".txt"):
+        extension = ".txt"
         format = "raw"
     else:
         # XXX do real content negotiation, e.g. mimeparse.py
@@ -58,6 +42,31 @@ def runcgi(logfile):
             format = "raw"
         else:
             format = "turtle" # default
+
+    parts = PATH_INFO.split('/')
+    # remove extension if any:
+    if parts[-1].endswith(extension):
+        parts[-1] = parts[-1][:-len(extension) or None]
+
+    if len(parts) > 1:
+        channel = parts[1]
+    else:
+        channel = ""
+    if len(parts) > 2:
+        timeprefix = parts[2]
+    else:
+        timeprefix = ""
+
+    title = "%s-%s" % (channel, timeprefix)
+    # XXX the following assumes http over port 80, no QUERY_STRING
+    requesturi = "http://"+HTTP_HOST+REQUEST_URI
+    datauri = requesturi
+    # remove extension if any, to reset content negotiation in datauri:
+    if datauri.endswith(extension):
+        datauri = datauri[:-len(extension) or None]
+        
+    # FIXME can't infer this from CGI info?
+    datarooturi = "http://irc.sioc-project.org/"
 
     if format == "html":
         print "Content-type: text/html"
@@ -72,9 +81,9 @@ def runcgi(logfile):
     if channel and timeprefix:
         # show log
         if format == "html":
-            sink = HtmlSink(title, selfuri)
+            sink = HtmlSink(title, datauri)
         elif format == "turtle":
-            sink = TurtleSink(title, selfuri)
+            sink = TurtleSink(datarooturi, channel)
         elif format == "raw":
             sink = RawSink()
 

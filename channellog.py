@@ -275,7 +275,7 @@ class TurtleSink(IrcSink):
 
         channelName = self.channel.strip("#").lower()
 
-        file = channelName + day
+        file = channelName + "/" + day
 
         # XXX need to remove leading + or - from content?
 
