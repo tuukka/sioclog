@@ -26,6 +26,8 @@ rdf_type = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
 rdfs_label   = "http://www.w3.org/2000/01/rdf-schema#label"
 rdfs_seeAlso = "http://www.w3.org/2000/01/rdf-schema#seeAlso"
 
+owl_sameAs = "http://www.w3.org/2002/07/owl#sameAs"
+
 dc_date           = "http://purl.org/dc/elements/1.1/date"
 dcterms_created   = "http://purl.org/dc/terms/created"
 xsd_dateTime      = "http://www.w3.org/2001/XMLSchema#dateTime"
@@ -39,6 +41,7 @@ ds_item           = "http://fenfire.org/2007/03/discussion-summaries#item"
 ds_occurrence     = "http://fenfire.org/2007/03/discussion-summaries#occurrence"
 
 namespaces = [("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#"),
+              ("owl", "http://www.w3.org/2002/07/owl#"),
               ("rdfs", "http://www.w3.org/2000/01/rdf-schema#"),
               ("dc", "http://purl.org/dc/elements/1.1/"),
               ("dcterms", "http://purl.org/dc/terms/"),
@@ -283,18 +286,20 @@ class TurtleSink(IrcSink):
         self.root = root
         self.channel = channel
         self.channelID = self.channel.strip("#").lower()
-        self.channelURI = "irc://freenode/%23" + self.channelID
+        self.channelURI = self.root + self.channelID
 
         self.triples = []
 
-        self.base = self.root + self.channelID + "/"
+        self.base = self.root
 
         for ns, uri in namespaces:
             print "@prefix %s: <%s> ." % (ns, self.turtle_escape(">", uri))
         print
         print "@base <%s> ." % (self.turtle_escape(">", self.base))
         print
-        self.triples += [(self.channelURI, rdf_type, sioc_Forum),
+        self.triples += [(self.channelURI, owl_sameAs, 
+                          "irc://freenode/%23" + self.channelID),
+                         (self.channelURI, rdf_type, sioc_Forum),
                          (self.channelURI, rdfs_label, 
                           PlainLiteral("#" + self.channel)),
                          ]
