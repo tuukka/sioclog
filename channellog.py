@@ -14,6 +14,12 @@ import ircbase
 ircbase.dbg = False
 from ircbase import parseprefix, Line, Irc
 
+def parse_action(text):
+    if text.startswith("\x01ACTION ") and text.endswith("\x01"):
+        return True, text[len("\x01ACTION "):-1]
+    else:
+        return False, text
+
 # the RDF vocabulary
 rdf_type = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
 
@@ -229,7 +235,15 @@ SIOC.
         time = line.time.split("T")[1]
         nick,_acct = parseprefix(line.prefix)
         content = line.args[1]
-        print """<tr>
+        action, content = parse_action(content)
+        if action:
+            print """<tr>
+<td><a name="%s" href="#%s">%s</a></td>
+<td> * </td>
+<td>%s %s</td>
+</tr>""" % (id, id, time, self.escape_html(nick), self.escape_html(content))
+        else:
+            print """<tr>
 <td><a name="%s" href="#%s">%s</a></td>
 <td>&lt;%s&gt;</td>
 <td>%s</td>
@@ -271,16 +285,23 @@ class TurtleSink(IrcSink):
         day = line.time.split("T")[0]
         second = line.time.split("T")[1]
         nick,_acct = parseprefix(line.prefix)
-        content = line.args[1]
+        rawcontent = line.args[1]
 
         channelName = self.channel.strip("#").lower()
 
         file = channelName + "/" + day
 
-        # XXX need to remove leading + or - from content?
+        # XXX need to remove leading + or - from rawcontent?
 
-        if content.startswith("[off]") or content.startswith("\1ACTION [off]"):
+        action, content = parse_action(rawcontent)
+
+        if content.startswith("[off]"):
             return [] # hide off-record statements
+
+        if action:
+            label = " * " + nick + " " + content
+        else:
+            label = "<" + nick + "> " + content
 
         channel = "irc://freenode/%23" + channelName
         event = self.root + file + "#" + second # XXX + offset to make this unique
@@ -291,8 +312,8 @@ class TurtleSink(IrcSink):
                 (channel, rdf_type, sioc_Forum),
                 (event, dcterms_created, timestamp),
                 (event, sioc_has_creator, creator),
-                (event, sioc_content, PlainLiteral(content)),
-                (event, rdfs_label, PlainLiteral("<"+nick+"> "+content)),
+                (event, sioc_content, PlainLiteral(rawcontent)),
+                (event, rdfs_label, PlainLiteral(label)),
                 (event, rdf_type, sioc_Post),
                 (creator, rdfs_label, PlainLiteral(nick)),
                 (creator, rdf_type, sioc_User)]
