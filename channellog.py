@@ -14,41 +14,15 @@ import ircbase
 ircbase.dbg = False
 from ircbase import parseprefix, Line, Irc
 
+from turtle import PlainLiteral, TypedLiteral, TurtleWriter
+from vocabulary import namespaces, RDF, RDFS, OWL, DC, DCTERMS, XSD, SIOC, DS
+
 def parse_action(text):
     if text.startswith("\x01ACTION ") and text.endswith("\x01"):
         return True, text[len("\x01ACTION "):-1]
     else:
         return False, text
 
-# the RDF vocabulary
-rdf_type = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-
-rdfs_label   = "http://www.w3.org/2000/01/rdf-schema#label"
-rdfs_seeAlso = "http://www.w3.org/2000/01/rdf-schema#seeAlso"
-
-owl_sameAs = "http://www.w3.org/2002/07/owl#sameAs"
-
-dc_date           = "http://purl.org/dc/elements/1.1/date"
-dcterms_created   = "http://purl.org/dc/terms/created"
-xsd_dateTime      = "http://www.w3.org/2001/XMLSchema#dateTime"
-sioc_container_of = "http://rdfs.org/sioc/ns#container_of"
-sioc_has_creator  = "http://rdfs.org/sioc/ns#has_creator"
-sioc_content      = "http://rdfs.org/sioc/ns#content"
-sioc_Forum        = "http://rdfs.org/sioc/ns#Forum"
-sioc_Post         = "http://rdfs.org/sioc/ns#Post"
-sioc_User         = "http://rdfs.org/sioc/ns#User"
-ds_item           = "http://fenfire.org/2007/03/discussion-summaries#item"
-ds_occurrence     = "http://fenfire.org/2007/03/discussion-summaries#occurrence"
-
-namespaces = [("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#"),
-              ("owl", "http://www.w3.org/2002/07/owl#"),
-              ("rdfs", "http://www.w3.org/2000/01/rdf-schema#"),
-              ("dc", "http://purl.org/dc/elements/1.1/"),
-              ("dcterms", "http://purl.org/dc/terms/"),
-              ("xsd", "http://www.w3.org/2001/XMLSchema#"),
-              ("sioc", "http://rdfs.org/sioc/ns#"),
-              ("ds", "http://fenfire.org/2007/03/discussion-summaries#"),
-              ]
 
 class IrcFilter(Irc):
     def __init__(self, sink):
@@ -291,19 +265,12 @@ class TurtleSink(IrcSink):
         oldChannelURI = "irc://freenode/%23" + self.channelID
 
         self.triples = []
-
         self.base = self.root
-
         self.seenNicks = {}
 
-        for ns, uri in namespaces:
-            print "@prefix %s: <%s> ." % (ns, self.turtle_escape(">", uri))
-        print
-        print "@base <%s> ." % (self.turtle_escape(">", self.base))
-        print
-        self.triples += [(self.channelURI, owl_sameAs, oldChannelURI),
-                         (self.channelURI, rdf_type, sioc_Forum),
-                         (self.channelURI, rdfs_label, 
+        self.triples += [(self.channelURI, OWL.sameAs, oldChannelURI),
+                         (self.channelURI, RDF.type, SIOC.Forum),
+                         (self.channelURI, RDFS.label, 
                           PlainLiteral("#" + self.channel)),
                          ]
 
@@ -333,19 +300,19 @@ class TurtleSink(IrcSink):
             label = "<" + nick + "> " + content
 
         event = self.root + file + "#" + second # XXX + offset to make this unique
-        timestamp = TypedLiteral(time, xsd_dateTime)
+        timestamp = TypedLiteral(time, XSD.dateTime)
 
         self.seenNicks[nick] = nick
 
         creator = self.root + "users/" + nick
 
         return [None, # adds a blank line for clarity
-                (self.channelURI, sioc_container_of, event),
-                (event, dcterms_created, timestamp),
-                (event, sioc_has_creator, creator),
-                (event, sioc_content, PlainLiteral(rawcontent)),
-                (event, rdfs_label, PlainLiteral(label)),
-                (event, rdf_type, sioc_Post),
+                (self.channelURI, SIOC.container_of, event),
+                (event, DCTERMS.created, timestamp),
+                (event, SIOC.has_creator, creator),
+                (event, SIOC.content, PlainLiteral(rawcontent)),
+                (event, RDFS.label, PlainLiteral(label)),
+                (event, RDF.type, SIOC.Post),
                 ]
 
     def close(self):
@@ -354,57 +321,15 @@ class TurtleSink(IrcSink):
             oldCreator = "irc://freenode/" + nick + ",isuser"
                 
             self.triples += [None,
-                             (creator, owl_sameAs, oldCreator),
-                             (creator, rdfs_label, PlainLiteral(nick)),
-                             (creator, rdf_type, sioc_User),
+                             (creator, OWL.sameAs, oldCreator),
+                             (creator, RDFS.label, PlainLiteral(nick)),
+                             (creator, RDF.type, SIOC.User),
                              ]
-            
-        for t in self.triples:
-            if not t:
-                print
-            else:
-                s,p,o = t
-                print "%s %s %s ." % (self.show(s), self.show(p), self.show(o))
 
-    def show(self, node):
-        # FIXME escaping
-        if isinstance(node, basestring): # URI
-            if node.startswith(self.base):
-                rest = node[len(self.base):]
-                if self.base.endswith("/") and not rest.startswith("/"):
-                    return "<" + self.turtle_escape(">", rest) + ">"
-                # XXX detect more cases where we can use a relative URI...
-            for ns, uri in namespaces:
-                if node.startswith(uri): # XXX and the rest is an allowed name
-                    return ns + ":" + node[len(uri):]
-            return "<" + self.turtle_escape(">", node) + ">"
-        elif isinstance(node, PlainLiteral):
-            return '"' + self.turtle_escape('"', node.text) + '"'
-        elif isinstance(node, TypedLiteral):
-            return '"' + self.turtle_escape('"', node.text) + '"' + "^^" + self.show(node.literaltype)
+        writer = TurtleWriter(self.base, namespaces)
+        writer.write(self.triples)
+        writer.close()
 
-    def turtle_escape(self, endchar, text):
-        replacements = ([('\\', '\\\\'),
-                         (endchar, '\\'+endchar),
-                         ('\n', '\\n'),
-                         ('\r', '\\r'),
-                         ('\t', '\\t')] +
-                        [(chr(c), '\\u%04x' % c) for c in range(0x20)+[0x7f]]
-                        )
-        for char, escape in replacements:
-            text = text.replace(char, escape)
-        return text
-
-class PlainLiteral:
-    """RDF plain literal"""
-    def __init__(self, text):
-        self.text = str(text)
-
-class TypedLiteral:
-    """RDF typed literal"""
-    def __init__(self, text, literaltype):
-        self.text = str(text)
-        self.literaltype = literaltype
 
 class RawSink(IrcSink):
     """A sink that prints the lines it receives raw but timestamped"""

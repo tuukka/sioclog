@@ -10,6 +10,8 @@ runcgi("sioclogbot.log")
 import cgi, os
 
 from channellog import OffFilter, ChannelFilter, TimeFilter, HtmlSink, TurtleSink, RawSink, ChannelsAndDaysSink, run
+from turtle import PlainLiteral, TypedLiteral, TurtleWriter
+from vocabulary import namespaces, RDF, RDFS, OWL, DC, DCTERMS, XSD, SIOC, DS
 
 def runcgi(logfile):
     HTTP_HOST = os.environ.get('HTTP_HOST', "")
@@ -91,8 +93,15 @@ def runcgi(logfile):
         if format == "html":
             print """<h1>User %s</h1>""" % channel
         elif format == "turtle":
-            print "<http://irc.sioc-project.org/users/%s> <http://www.w3.org/2002/07/owl#sameAs> <irc://freenode/%s,isuser> ." % (channel, channel)
-            print "<http://irc.sioc-project.org/users/%s> <http://www.w3.org/2000/01/rdf-schema#label> \"%s\" ." % (channel, channel)
+            userURI = "http://irc.sioc-project.org/users/%s" % channel
+            oldUserURI = "irc://freenode/%s,isuser" % channel
+            triples = [(userURI, OWL.sameAs, oldUserURI),
+                       (userURI, RDFS.label, PlainLiteral(channel)),
+                       ]
+            writer = TurtleWriter(None, namespaces)
+            writer.write(triples)
+            writer.close()
+
     elif restype == "users":
         # show user index
         if format == "html":
