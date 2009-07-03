@@ -35,6 +35,9 @@ class SIOC(object):
     Post         = "http://rdfs.org/sioc/ns#Post"
     User         = "http://rdfs.org/sioc/ns#User"
 
+class SIOCT(object):
+    ChatChannel = "http://rdfs.org/sioc/types#ChatChannel"
+
 class DS(object):
     item           = "http://fenfire.org/2007/03/discussion-summaries#item"
     occurrence     = "http://fenfire.org/2007/03/discussion-summaries#occurrence"

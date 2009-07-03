@@ -15,7 +15,7 @@ ircbase.dbg = False
 from ircbase import parseprefix, Line, Irc
 
 from turtle import PlainLiteral, TypedLiteral, TurtleWriter
-from vocabulary import namespaces, RDF, RDFS, OWL, DC, DCTERMS, XSD, SIOC, DS
+from vocabulary import namespaces, RDF, RDFS, OWL, DC, DCTERMS, XSD, SIOC, SIOCT, DS
 
 def parse_action(text):
     if text.startswith("\x01ACTION ") and text.endswith("\x01"):
@@ -270,6 +270,7 @@ class TurtleSink(IrcSink):
 
         self.triples += [(self.channelURI, OWL.sameAs, oldChannelURI),
                          (self.channelURI, RDF.type, SIOC.Forum),
+                         (self.channelURI, RDF.type, SIOCT.ChatChannel),
                          (self.channelURI, RDFS.label, 
                           PlainLiteral("#" + self.channel)),
                          ]
