@@ -93,10 +93,11 @@ def runcgi(logfile):
         if format == "html":
             print """<h1>User %s</h1>""" % channel
         elif format == "turtle":
-            userURI = "http://irc.sioc-project.org/users/%s" % channel
+            userURI = "http://irc.sioc-project.org/users/%s#user" % channel
             oldUserURI = "irc://freenode/%s,isuser" % channel
             triples = [(userURI, OWL.sameAs, oldUserURI),
                        (userURI, RDFS.label, PlainLiteral(channel)),
+                       (userURI, RDF.type, SIOC.User),
                        ]
             writer = TurtleWriter(None, namespaces)
             writer.write(triples)

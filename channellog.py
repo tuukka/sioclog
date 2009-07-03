@@ -260,7 +260,7 @@ class TurtleSink(IrcSink):
         self.root = root
         self.channel = channel
         self.channelID = self.channel.strip("#").lower()
-        self.channelURI = self.root + self.channelID
+        self.channelURI = self.root + self.channelID + "#channel"
 
         oldChannelURI = "irc://freenode/%23" + self.channelID
 
@@ -304,7 +304,7 @@ class TurtleSink(IrcSink):
 
         self.seenNicks[nick] = nick
 
-        creator = self.root + "users/" + nick
+        creator = self.root + "users/" + nick + "#user"
 
         return [None, # adds a blank line for clarity
                 (self.channelURI, SIOC.container_of, event),
@@ -317,7 +317,7 @@ class TurtleSink(IrcSink):
 
     def close(self):
         for nick in self.seenNicks:
-            creator = self.root + "users/" + nick
+            creator = self.root + "users/" + nick + "#user"
             oldCreator = "irc://freenode/" + nick + ",isuser"
                 
             self.triples += [None,
