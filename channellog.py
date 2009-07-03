@@ -294,6 +294,8 @@ class TurtleSink(IrcSink):
 
         self.base = self.root
 
+        self.seenNicks = {}
+
         for ns, uri in namespaces:
             print "@prefix %s: <%s> ." % (ns, self.turtle_escape(">", uri))
         print
@@ -333,8 +335,9 @@ class TurtleSink(IrcSink):
         event = self.root + file + "#" + second # XXX + offset to make this unique
         timestamp = TypedLiteral(time, xsd_dateTime)
 
+        self.seenNicks[nick] = nick
+
         creator = self.root + "users/" + nick
-        oldCreator = "irc://freenode/" + nick + ",isuser"
 
         return [None, # adds a blank line for clarity
                 (self.channelURI, sioc_container_of, event),
@@ -343,11 +346,19 @@ class TurtleSink(IrcSink):
                 (event, sioc_content, PlainLiteral(rawcontent)),
                 (event, rdfs_label, PlainLiteral(label)),
                 (event, rdf_type, sioc_Post),
-                (creator, owl_sameAs, oldCreator),
-                (creator, rdfs_label, PlainLiteral(nick)),
-                (creator, rdf_type, sioc_User)]
-    
+                ]
+
     def close(self):
+        for nick in self.seenNicks:
+            creator = self.root + "users/" + nick
+            oldCreator = "irc://freenode/" + nick + ",isuser"
+                
+            self.triples += [None,
+                             (creator, owl_sameAs, oldCreator),
+                             (creator, rdfs_label, PlainLiteral(nick)),
+                             (creator, rdf_type, sioc_User),
+                             ]
+            
         for t in self.triples:
             if not t:
                 print
