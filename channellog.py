@@ -38,6 +38,15 @@ sioc_User         = "http://rdfs.org/sioc/ns#User"
 ds_item           = "http://fenfire.org/2007/03/discussion-summaries#item"
 ds_occurrence     = "http://fenfire.org/2007/03/discussion-summaries#occurrence"
 
+namespaces = [("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#"),
+              ("rdfs", "http://www.w3.org/2000/01/rdf-schema#"),
+              ("dc", "http://purl.org/dc/elements/1.1/"),
+              ("dcterms", "http://purl.org/dc/terms/"),
+              ("xsd", "http://www.w3.org/2001/XMLSchema#"),
+              ("sioc", "http://rdfs.org/sioc/ns#"),
+              ("ds", "http://fenfire.org/2007/03/discussion-summaries#"),
+              ]
+
 class IrcFilter(Irc):
     def __init__(self, sink):
         self.sink = sink
@@ -273,8 +282,22 @@ class TurtleSink(IrcSink):
         IrcSink.__init__(self)
         self.root = root
         self.channel = channel
+        self.channelID = self.channel.strip("#").lower()
+        self.channelURI = "irc://freenode/%23" + self.channelID
 
         self.triples = []
+
+        self.base = self.root + self.channelID + "/"
+
+        for ns, uri in namespaces:
+            print "@prefix %s: <%s> ." % (ns, self.turtle_escape(">", uri))
+        print
+        print "@base <%s> ." % (self.turtle_escape(">", self.base))
+        print
+        self.triples += [(self.channelURI, rdf_type, sioc_Forum),
+                         (self.channelURI, rdfs_label, 
+                          PlainLiteral("#" + self.channel)),
+                         ]
 
     def irc_PRIVMSG(self, line):
         self.triples += self.create_triples(line)
@@ -287,9 +310,7 @@ class TurtleSink(IrcSink):
         nick,_acct = parseprefix(line.prefix)
         rawcontent = line.args[1]
 
-        channelName = self.channel.strip("#").lower()
-
-        file = channelName + "/" + day
+        file = self.channelID + "/" + day
 
         # XXX need to remove leading + or - from rawcontent?
 
@@ -303,13 +324,12 @@ class TurtleSink(IrcSink):
         else:
             label = "<" + nick + "> " + content
 
-        channel = "irc://freenode/%23" + channelName
         event = self.root + file + "#" + second # XXX + offset to make this unique
         timestamp = TypedLiteral(time, xsd_dateTime)
 
         creator = "irc://freenode/"+nick+",isuser"
-        return [(channel, sioc_container_of, event),
-                (channel, rdf_type, sioc_Forum),
+        return [None, # adds a blank line for clarity
+                (self.channelURI, sioc_container_of, event),
                 (event, dcterms_created, timestamp),
                 (event, sioc_has_creator, creator),
                 (event, sioc_content, PlainLiteral(rawcontent)),
@@ -320,13 +340,24 @@ class TurtleSink(IrcSink):
     
     def close(self):
         for t in self.triples:
-            s,p,o = t
-            print "%s %s %s ." % (self.show(s), self.show(p), self.show(o))
+            if not t:
+                print
+            else:
+                s,p,o = t
+                print "%s %s %s ." % (self.show(s), self.show(p), self.show(o))
 
     def show(self, node):
         # FIXME escaping
-        if isinstance(node, basestring):
-            return "<" + self.turtle_escape(">", node) + ">" # URI
+        if isinstance(node, basestring): # URI
+            if node.startswith(self.base):
+                rest = node[len(self.base):]
+                if self.base.endswith("/") and not rest.startswith("/"):
+                    return "<" + self.turtle_escape(">", rest) + ">"
+                # XXX detect more cases where we can use a relative URI...
+            for ns, uri in namespaces:
+                if node.startswith(uri): # XXX and the rest is an allowed name
+                    return ns + ":" + node[len(uri):]
+            return "<" + self.turtle_escape(">", node) + ">"
         elif isinstance(node, PlainLiteral):
             return '"' + self.turtle_escape('"', node.text) + '"'
         elif isinstance(node, TypedLiteral):
