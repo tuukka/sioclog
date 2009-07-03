@@ -78,13 +78,13 @@ def runcgi(logfile):
     datarooturi = "http://irc.sioc-project.org/"
 
     if format == "html":
-        print "Content-type: text/html"
+        print "Content-type: text/html; charset=utf-8"
         print
     elif format == "turtle":
-        print "Content-type: application/x-turtle"
+        print "Content-type: application/x-turtle; charset=utf-8"
         print
     elif format == "raw":
-        print "Content-type: text/plain"
+        print "Content-type: text/plain; charset=utf-8"
         print
 
     if restype == "users" and channel:
