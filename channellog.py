@@ -300,16 +300,28 @@ class TurtleSink(IrcSink):
     def close(self):
         for t in self.triples:
             s,p,o = t
-            print "%s %s %s." % (self.show(s), self.show(p), self.show(o))
+            print "%s %s %s ." % (self.show(s), self.show(p), self.show(o))
 
     def show(self, node):
         # FIXME escaping
         if isinstance(node, basestring):
-            return "<" + node + ">" # URI
+            return "<" + self.turtle_escape(">", node) + ">" # URI
         elif isinstance(node, PlainLiteral):
-            return '"' + node.text + '"'
+            return '"' + self.turtle_escape('"', node.text) + '"'
         elif isinstance(node, TypedLiteral):
-            return '"' + node.text + '"' + "^^" + self.show(node.literaltype)
+            return '"' + self.turtle_escape('"', node.text) + '"' + "^^" + self.show(node.literaltype)
+
+    def turtle_escape(self, endchar, text):
+        replacements = ([('\\', '\\\\'),
+                         (endchar, '\\'+endchar),
+                         ('\n', '\\n'),
+                         ('\r', '\\r'),
+                         ('\t', '\\t')] +
+                        [(chr(c), '\\u%04x' % c) for c in range(0x20)+[0x7f]]
+                        )
+        for char, escape in replacements:
+            text = text.replace(char, escape)
+        return text
 
 class PlainLiteral:
     """RDF plain literal"""
