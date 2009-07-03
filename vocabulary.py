@@ -34,6 +34,7 @@ class SIOC(object):
     Forum        = "http://rdfs.org/sioc/ns#Forum"
     Post         = "http://rdfs.org/sioc/ns#Post"
     User         = "http://rdfs.org/sioc/ns#User"
+    space_of     = "http://rdfs.org/sioc/ns#space_of"
 
 class SIOCT(object):
     ChatChannel = "http://rdfs.org/sioc/types#ChatChannel"
@@ -49,5 +50,6 @@ namespaces = [("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#"),
               ("dcterms", "http://purl.org/dc/terms/"),
               ("xsd", "http://www.w3.org/2001/XMLSchema#"),
               ("sioc", "http://rdfs.org/sioc/ns#"),
+              ("sioct", "http://rdfs.org/sioc/types#"),
               ("ds", "http://fenfire.org/2007/03/discussion-summaries#"),
               ]

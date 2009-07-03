@@ -346,6 +346,7 @@ class ChannelsAndDaysSink(IrcSink):
         self.channels = {}
         self.days = {}
         self.day2channels = {}
+        self.channel2days = {}
 
     def irc_PRIVMSG(self, line):
         id = line.time.split("T")[1] # FIXME not unique
@@ -360,6 +361,7 @@ class ChannelsAndDaysSink(IrcSink):
         self.days[day] = True
         self.channels[channelName] = True
         self.day2channels.setdefault(day, {})[channelName] = True
+        self.channel2days.setdefault(channelName, {})[day] = True
 
     handleReceivedFallback = lambda self,x:None
 

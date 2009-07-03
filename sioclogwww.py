@@ -11,7 +11,7 @@ import cgi, os
 
 from channellog import OffFilter, ChannelFilter, TimeFilter, HtmlSink, TurtleSink, RawSink, ChannelsAndDaysSink, run
 from turtle import PlainLiteral, TypedLiteral, TurtleWriter
-from vocabulary import namespaces, RDF, RDFS, OWL, DC, DCTERMS, XSD, SIOC, DS
+from vocabulary import namespaces, RDF, RDFS, OWL, DC, DCTERMS, XSD, SIOC, SIOCT, DS
 
 def runcgi(logfile):
     HTTP_HOST = os.environ.get('HTTP_HOST', "")
@@ -95,7 +95,8 @@ def runcgi(logfile):
         elif format == "turtle":
             userURI = "http://irc.sioc-project.org/users/%s#user" % channel
             oldUserURI = "irc://freenode/%s,isuser" % channel
-            triples = [(userURI, OWL.sameAs, oldUserURI),
+            triples = [(datarooturi + "#freenode", SIOC.space_of, userURI),
+                       (userURI, OWL.sameAs, oldUserURI),
                        (userURI, RDFS.label, PlainLiteral(channel)),
                        (userURI, RDF.type, SIOC.User),
                        ]
@@ -139,7 +140,39 @@ def runcgi(logfile):
 
         if format == "html":
             html_index(sink)
+        elif format == "turtle":
+            turtle_index(sink, datarooturi)
         # XXX more formats
+
+def turtle_index(sink, root):
+    triples = []
+
+    freenodeURI = root + "#freenode"
+
+    triples += [(freenodeURI, RDFS.label, PlainLiteral("Freenode"))]
+
+    for channel in sorted(sink.channels.keys()):
+        channelID = channel.strip("#").lower()
+        channelURI = root + channelID + "#channel"
+
+        oldChannelURI = "irc://freenode/%23" + channelID
+
+        triples += [None,
+                    (freenodeURI, SIOC.space_of, channelURI),
+                    (channelURI, OWL.sameAs, oldChannelURI),
+                    (channelURI, RDF.type, SIOC.Forum),
+                    (channelURI, RDF.type, SIOCT.ChatChannel),
+                    (channelURI, RDFS.label, 
+                     PlainLiteral("#" + channel)),
+                    ]
+        
+        for day in sorted(sink.channel2days[channel]):
+            logURI = "%s%s/%s" % (root, channelID, day)
+            triples += [(channelURI, RDFS.seeAlso, logURI)]
+
+        writer = TurtleWriter(root, namespaces)
+        writer.write(triples)
+        writer.close()
 
 def html_index(sink):
     print """<?xml version="1.0" encoding="UTF-8"?>
