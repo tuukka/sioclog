@@ -48,12 +48,21 @@ def runcgi(logfile):
     if parts[-1].endswith(extension):
         parts[-1] = parts[-1][:-len(extension) or None]
 
+    if len(parts) > 1 and parts[1] not in ["channels", "users"]:
+        parts.insert(1, "channels") # XXX default type for now
+
     if len(parts) > 1:
-        channel = parts[1]
+        restype = parts[1]
+    else:
+        restype = ""
+
+    if len(parts) > 2:
+        channel = parts[2]
     else:
         channel = ""
-    if len(parts) > 2:
-        timeprefix = parts[2]
+
+    if len(parts) > 3:
+        timeprefix = parts[3]
     else:
         timeprefix = ""
 
@@ -78,7 +87,17 @@ def runcgi(logfile):
         print "Content-type: text/plain"
         print
 
-    if channel and timeprefix:
+    if restype == "users" and channel:
+        if format == "html":
+            print """<h1>User %s</h1>""" % channel
+        elif format == "turtle":
+            print "<http://irc.sioc-project.org/users/%s> <http://www.w3.org/2002/07/owl#sameAs> <irc://freenode/%s,isuser> ." % (channel, channel)
+            print "<http://irc.sioc-project.org/users/%s> <http://www.w3.org/2000/01/rdf-schema#label> \"%s\" ." % (channel, channel)
+    elif restype == "users":
+        # show user index
+        if format == "html":
+            print """<h1>Users</h1>"""
+    elif channel and timeprefix:
         # show log
         if format == "html":
             sink = HtmlSink(title, datauri)

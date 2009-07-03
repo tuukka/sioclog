@@ -288,6 +288,8 @@ class TurtleSink(IrcSink):
         self.channelID = self.channel.strip("#").lower()
         self.channelURI = self.root + self.channelID
 
+        oldChannelURI = "irc://freenode/%23" + self.channelID
+
         self.triples = []
 
         self.base = self.root
@@ -297,8 +299,7 @@ class TurtleSink(IrcSink):
         print
         print "@base <%s> ." % (self.turtle_escape(">", self.base))
         print
-        self.triples += [(self.channelURI, owl_sameAs, 
-                          "irc://freenode/%23" + self.channelID),
+        self.triples += [(self.channelURI, owl_sameAs, oldChannelURI),
                          (self.channelURI, rdf_type, sioc_Forum),
                          (self.channelURI, rdfs_label, 
                           PlainLiteral("#" + self.channel)),
@@ -332,7 +333,9 @@ class TurtleSink(IrcSink):
         event = self.root + file + "#" + second # XXX + offset to make this unique
         timestamp = TypedLiteral(time, xsd_dateTime)
 
-        creator = "irc://freenode/"+nick+",isuser"
+        creator = self.root + "users/" + nick
+        oldCreator = "irc://freenode/" + nick + ",isuser"
+
         return [None, # adds a blank line for clarity
                 (self.channelURI, sioc_container_of, event),
                 (event, dcterms_created, timestamp),
@@ -340,6 +343,7 @@ class TurtleSink(IrcSink):
                 (event, sioc_content, PlainLiteral(rawcontent)),
                 (event, rdfs_label, PlainLiteral(label)),
                 (event, rdf_type, sioc_Post),
+                (creator, owl_sameAs, oldCreator),
                 (creator, rdfs_label, PlainLiteral(nick)),
                 (creator, rdf_type, sioc_User)]
     
