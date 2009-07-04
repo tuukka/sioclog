@@ -8,6 +8,8 @@ pipeline = ChannelFilter("#sioc", RawSink())
 run(file("sioc.log"), pipeline)
 """
 
+import re, datetime
+
 from traceback import print_exc
 
 import ircbase
@@ -16,6 +18,28 @@ from ircbase import parseprefix, Line, Irc
 
 from turtle import PlainLiteral, TypedLiteral, TurtleWriter
 from vocabulary import namespaces, RDF, RDFS, OWL, DC, DCTERMS, XSD, SIOC, SIOCT, DS
+
+datetimere = r"(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(\.\d+)?"
+timezonere = r"(Z|(\+|-)(\d{2}):(\d{2}))"
+timere = re.compile(datetimere + timezonere)
+def convert_timestamp_to_z(text):
+    # 2009-07-04T15:14:21.231+03:00
+    match = timere.match(text)
+    if match and match.group(0) == text:
+        if match.groups()[7] == "Z":
+            return text
+        else:
+            localtime = datetime.datetime(*map(int, match.groups()[:6]))
+            fraction = match.groups()[6] or ""
+            tzsign, tzhours, tzminutes = match.groups()[8:]
+            distance = datetime.timedelta(hours=int(tzhours), 
+                                          minutes=int(tzminutes))
+            if tzsign == "-":
+                utctime = localtime + distance
+            else:
+                utctime = localtime - distance
+            return utctime.isoformat() + fraction + "Z"
+    return
 
 def parse_action(text):
     if text.startswith("\x01ACTION ") and text.endswith("\x01"):
@@ -35,6 +59,11 @@ class IrcFilter(Irc):
 class IrcSink(IrcFilter):
     def __init__(self):
         IrcFilter.__init__(self, None)
+
+class AddZTimeFilter(IrcFilter):
+    def handleReceivedFallback(self, line):
+        line.ztime = convert_timestamp_to_z(line.time)
+        self.sink.handleReceived(line)
 
 class ChannelFilter(IrcFilter):
     """A filter that only passes on lines related to a given channel"""
@@ -174,7 +203,7 @@ class TimeFilter(IrcFilter):
         self.timeprefix = timeprefix
         self.sink = sink
     def handleReceivedFallback(self, line):
-        if line.time.startswith(self.timeprefix):
+        if line.ztime.startswith(self.timeprefix):
             self.sink.handleReceived(line)
 
 class OffFilter(IrcFilter):
@@ -214,11 +243,14 @@ These logs are provided as an experiment in indexing discussions using
 SIOC. 
 </p>
 </div>
+<em>
+Times are in UTC/GMT.
+</em>
 <table>""" % (title, selfuri, title)
 
     def irc_PRIVMSG(self, line):
-        id = line.time.split("T")[1] # FIXME not unique
-        time = line.time.split("T")[1]
+        id = line.ztime.split("T")[1][:-1] # FIXME not unique
+        time = id.split(".")[0]
         nick,_acct = parseprefix(line.prefix)
         content = line.args[1]
         action, content = parse_action(content)
@@ -279,10 +311,9 @@ class TurtleSink(IrcSink):
         self.triples += self.create_triples(line)
         
     def create_triples(self, line):
-        id = line.time.split("T")[1] # FIXME not unique
-        time = line.time # make sure this is in "Z"
-        day = line.time.split("T")[0]
-        second = line.time.split("T")[1]
+        id = line.ztime.split("T")[1][:-1] # FIXME not unique
+        time = line.ztime
+        day = line.ztime.split("T")[0]
         nick,_acct = parseprefix(line.prefix)
         rawcontent = line.args[1]
 
@@ -300,7 +331,7 @@ class TurtleSink(IrcSink):
         else:
             label = "<" + nick + "> " + content
 
-        event = self.root + file + "#" + second # XXX + offset to make this unique
+        event = self.root + file + "#" + id
         timestamp = TypedLiteral(time, XSD.dateTime)
 
         self.seenNicks[nick] = nick
@@ -349,9 +380,8 @@ class ChannelsAndDaysSink(IrcSink):
         self.channel2days = {}
 
     def irc_PRIVMSG(self, line):
-        id = line.time.split("T")[1] # FIXME not unique
-        time = line.time # make sure this is in "Z"
-        day = line.time.split("T")[0]
+        time = line.ztime
+        day = time.split("T")[0]
 
         target = line.args[0]
         if not target.startswith('#'):
@@ -367,6 +397,7 @@ class ChannelsAndDaysSink(IrcSink):
 
 def run(inputstream, pipeline):
     """Processes each line from the input in the pipeline and closes it"""
+    pipeline = AddZTimeFilter(pipeline)
     for l in inputstream:
         #print l
         time, linestr = l[:-1].split(" ",1)
