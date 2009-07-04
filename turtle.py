@@ -11,7 +11,6 @@ writer.close()
 
 class TurtleWriter(object):
     def __init__(self, base=None, namespaces=None):
-        self.base = base
         if namespaces is not None:
             self.namespaces = namespaces
         else:
@@ -22,11 +21,16 @@ class TurtleWriter(object):
         for ns, uri in self.namespaces:
             print "@prefix %s: <%s> ." % (ns, self.turtle_escape(">", uri))
 
+        self.setBase(base)
+
+        print
+
+    def setBase(self, base):
+        self.base = base
         if self.base:
             print
             print "@base <%s> ." % (self.turtle_escape(">", self.base))
-
-        print
+            print
 
     def write(self, triples):
         for t in triples:

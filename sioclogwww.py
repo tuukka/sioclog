@@ -11,7 +11,7 @@ import cgi, os
 
 from channellog import OffFilter, ChannelFilter, TimeFilter, HtmlSink, TurtleSink, RawSink, ChannelsAndDaysSink, run
 from turtle import PlainLiteral, TypedLiteral, TurtleWriter
-from vocabulary import namespaces, RDF, RDFS, OWL, DC, DCTERMS, XSD, SIOC, SIOCT, DS
+from vocabulary import namespaces, RDF, RDFS, OWL, DC, DCTERMS, XSD, FOAF, SIOC, SIOCT, DS
 
 def runcgi(logfile):
     HTTP_HOST = os.environ.get('HTTP_HOST', "")
@@ -68,7 +68,6 @@ def runcgi(logfile):
     else:
         timeprefix = ""
 
-    title = "%s-%s" % (channel, timeprefix)
     # XXX the following assumes http over port 80, no QUERY_STRING
     requesturi = "http://"+HTTP_HOST+REQUEST_URI
     datauri = requesturi
@@ -101,6 +100,10 @@ def runcgi(logfile):
                        (userURI, RDF.type, SIOC.User),
                        ]
             writer = TurtleWriter(None, namespaces)
+            title = "About user %s" % channel
+            writer.write([("", RDFS.label, PlainLiteral(title)),
+                          ("", FOAF.primaryTopic, userURI),
+                          ])
             writer.write(triples)
             writer.close()
 
@@ -111,9 +114,9 @@ def runcgi(logfile):
     elif channel and timeprefix:
         # show log
         if format == "html":
-            sink = HtmlSink(title, datauri)
+            sink = HtmlSink(datarooturi, channel, timeprefix, datauri)
         elif format == "turtle":
-            sink = TurtleSink(datarooturi, channel)
+            sink = TurtleSink(datarooturi, channel, timeprefix)
         elif format == "raw":
             sink = RawSink()
 
@@ -139,21 +142,24 @@ def runcgi(logfile):
         run(file(logfile), pipeline)
 
         if format == "html":
-            html_index(sink)
+            html_index(sink, datarooturi, datauri, channel)
         elif format == "turtle":
-            turtle_index(sink, datarooturi)
+            turtle_index(sink, datarooturi, datauri, channel)
         # XXX more formats
 
-def turtle_index(sink, root):
+def turtle_index(sink, root, selfuri, querychannel):
     triples = []
 
     freenodeURI = root + "#freenode"
 
     triples += [(freenodeURI, RDFS.label, PlainLiteral("Freenode"))]
 
-    for channel in sorted(sink.channels.keys()):
+    channels = sorted(sink.channels.keys())
+    channelURIs = []
+    for channel in channels:
         channelID = channel.strip("#").lower()
         channelURI = root + channelID + "#channel"
+        channelURIs.append(channelURI)
 
         oldChannelURI = "irc://freenode/%23" + channelID
 
@@ -170,18 +176,40 @@ def turtle_index(sink, root):
             logURI = "%s%s/%s" % (root, channelID, day)
             triples += [(channelURI, RDFS.seeAlso, logURI)]
 
-        writer = TurtleWriter(root, namespaces)
+        writer = TurtleWriter(None, namespaces)
+        if querychannel and channels:
+            title = "Index of #%s" % channels[0]
+            writer.write([("", FOAF.primaryTopic, channelURIs[0])])
+        elif querychannel:
+            title = "Empty index"
+        else:
+            title = "Index of some IRC discussion logs"
+            writer.write([("", FOAF.primaryTopic, freenodeURI)])
+            writer.write([("", FOAF.topic, channelURI)
+                         for channelURI in channelURIs])
+        writer.write([("", RDFS.label, PlainLiteral(title))])
+
+        writer.setBase(root)
         writer.write(triples)
         writer.close()
 
-def html_index(sink):
+def html_index(sink, root, selfuri, querychannel):
+
+    channels = sorted(sink.channels.keys())
+
+    if querychannel:
+        title = "Channel #%s" % channels[0]
+    else:
+        title = "Some IRC discussion logs"
+
     print """<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html 
      PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>Some IRC logs</title>
+<title>%s</title>
+<link rel="meta" href="http://triplr.org/rdf/%s" type="application/rdf+xml" title="SIOC"/>
 <style type="text/css"><!--
 div.logo-bar {
     float: right;
@@ -202,13 +230,37 @@ img {
 }
 --></style>
 </head>
-<body>
+<body>""" % (title, selfuri)
+
+    if selfuri == root:
+        selfuri2 = root + "index"
+    else:
+        selfuri2 = selfuri
+
+    print "<h1>%s</h1>" % title
+    print """<p>Available formats: <a href="%s">content-negotiated</a> <a href="%s.html">html</a> <a href="%s.turtle">turtle</a> (see <a href="http://sioc-project.org">SIOC</a> for the vocabulary) </p>""" % (selfuri, selfuri2, selfuri2)
+
+    if querychannel:
+        print """<p>This is a discussion channel on the Freenode IRC network.
+</p>"""
+    else:
+        print """
+<div class="logo-bar">
+<a href="http://fenfire.org"><img src="http://fenfire.org/logo.png" alt="Fenfire
+" title="The Fenfire project" /></a>
+<br />
+<a href="http://sioc-project.org/"><img src="http://sioc-project.org/files/sioc_
+button.gif" alt="SIOC" title="Semantically-Interlinked Online Communities"/></a>
+</div>
+
 <p>The URIs of unspecified format are content-negotiated and can thus be 
 opened equally well in web browsers and in RDF browsers such 
 as <a href="http://fenfire.org/">Fenfire</a>. The RDF data uses the 
 SIOC vocabulary (see the <a href="http://sioc-project.org/">
 Semantically-Interlinked Online Communities Project</a> for details).</p>
+""" 
 
+    print """
 <p><strong>Privacy notice:</strong> In line with Freenode policy, it is 
 possible to exclude your lines from these logs. Based on a common convention, 
 you can achieve this by prepending <code>[off]</code> to your messages and 
@@ -229,8 +281,10 @@ rm=searchbox_009180828701492049973%3A6ly79qxejks&lang=en"></script> -->
 
     print "<table>"
     print "<thead><tr><th></th>"
-    for channel in sorted(sink.channels.keys()):
-        print "<th>#%s</th>" % channel
+    for channel in channels:
+        channelID = channel.strip("#").lower()
+        channelURI = root + channelID + "#channel"
+        print """<th><a href="%s">#%s</a></th>""" % (channelURI, channel)
     print "</tr></thead><tbody>"            
     for day in reversed(sorted(sink.days.keys())):
         print "<tr>"

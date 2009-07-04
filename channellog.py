@@ -17,7 +17,18 @@ ircbase.dbg = False
 from ircbase import parseprefix, Line, Irc
 
 from turtle import PlainLiteral, TypedLiteral, TurtleWriter
-from vocabulary import namespaces, RDF, RDFS, OWL, DC, DCTERMS, XSD, SIOC, SIOCT, DS
+from vocabulary import namespaces, RDF, RDFS, OWL, DC, DCTERMS, XSD, FOAF, SIOC, SIOCT, DS
+
+def escape_html(s):
+    # & needs to be escaped first, before more are introduced:
+    s = s.replace('&', '&amp;')
+    s = s.replace('<', '&lt;')
+    s = s.replace('>', '&gt;')
+    s = s.replace('"', '&quot;')
+    return s
+
+def escape_htmls(*args):
+    return tuple(map(escape_html, args))
 
 datetimere = r"(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(\.\d+)?"
 timezonere = r"(Z|(\+|-)(\d{2}):(\d{2}))"
@@ -219,11 +230,18 @@ class OffFilter(IrcFilter):
 
 class HtmlSink(IrcSink):
     """A sink that renders the lines it receives as a HTML table"""
-    def __init__(self, title, selfuri):
+    def __init__(self, root, channel, timeprefix, selfuri):
         IrcSink.__init__(self)
+
+        self.root = root
+        self.channel = channel
+
+        channelID = self.channel.strip("#").lower()
+        channelURI = self.root + channelID + "#channel"
+
         print """<html>
 <head>
-<title>%s</title>
+<title>#%s on %s</title>
 <link rel="meta" href="http://triplr.org/rdf/%s" type="application/rdf+xml" title="SIOC"/>
 <style type="text/css"><!--
 td {
@@ -236,46 +254,44 @@ td > a:target {
 --></style>
 </head>
 <body>
-<h1>Experimental IRC log %s</h1>
+<h1>Discussion log for channel <a href="%s">#%s</a> on %s</h1>
+<p>Available formats: <a href="%s">content-negotiated</a> <a href="%s.html">html</a> <a href="%s.turtle">turtle</a> (see <a href="http://sioc-project.org">SIOC</a> for the vocabulary) <a href="%s.txt">raw</a></p>
+<p>Back to channel and daily index: <a href="/index">content-negotiated</a> <a href="/index.html">html</a> <a href="/index.turtle">turtle</a></p>
 <div style="color: 9999CC; background: #CCCCFF; border: 3px dashed; padding: 1em; margin: 1em;">
 <p style="color: black; margin: 0">
 These logs are provided as an experiment in indexing discussions using 
-SIOC. 
+<a href="http://sioc-project.org">SIOC</a>. 
 </p>
 </div>
 <em>
 Times are in UTC/GMT.
 </em>
-<table>""" % (title, selfuri, title)
+<table>""" % escape_htmls(channel, timeprefix, 
+                          selfuri, 
+                          channelURI, channel, timeprefix,
+                          selfuri, selfuri, selfuri, selfuri)
 
     def irc_PRIVMSG(self, line):
         id = line.ztime.split("T")[1][:-1] # FIXME not unique
         time = id.split(".")[0]
         nick,_acct = parseprefix(line.prefix)
         content = line.args[1]
+        creator = self.root + "users/" + nick + "#user"
         action, content = parse_action(content)
         if action:
             print """<tr>
 <td><a name="%s" href="#%s">%s</a></td>
 <td> * </td>
-<td>%s %s</td>
-</tr>""" % (id, id, time, self.escape_html(nick), self.escape_html(content))
+<td><a href="%s">%s</a> %s</td>
+</tr>""" % escape_htmls(id, id, time, creator, nick, content)
         else:
             print """<tr>
 <td><a name="%s" href="#%s">%s</a></td>
-<td>&lt;%s&gt;</td>
+<td>&lt;<a href="%s">%s</a>&gt;</td>
 <td>%s</td>
-</tr>""" % (id, id, time, self.escape_html(nick), self.escape_html(content))
+</tr>""" % escape_htmls(id, id, time, creator, nick, content)
 
     handleReceivedFallback = lambda self,x:None
-
-    def escape_html(self, s):
-        # & needs to be escaped first, before more are introduced:
-        s = s.replace('&', '&amp;')
-        s = s.replace('<', '&lt;')
-        s = s.replace('>', '&gt;')
-        s = s.replace('"', '&quot;')
-        return s
 
     def close(self):
         print """</table>
@@ -287,10 +303,11 @@ Times are in UTC/GMT.
 
 class TurtleSink(IrcSink):
     """A sink that renders the lines it receives as a Turtle RDF document"""
-    def __init__(self, root, channel):
+    def __init__(self, root, channel, timeprefix):
         IrcSink.__init__(self)
         self.root = root
         self.channel = channel
+        self.timeprefix = timeprefix
         self.channelID = self.channel.strip("#").lower()
         self.channelURI = self.root + self.channelID + "#channel"
 
@@ -358,7 +375,12 @@ class TurtleSink(IrcSink):
                              (creator, RDF.type, SIOC.User),
                              ]
 
-        writer = TurtleWriter(self.base, namespaces)
+        writer = TurtleWriter(None, namespaces)
+        title = "Log of #%s on %s" % (self.channel, self.timeprefix)
+        writer.write([("", RDFS.label, PlainLiteral(title)),
+                      ("", FOAF.primaryTopic, self.channelURI),
+                      ])
+        writer.setBase(self.base)
         writer.write(self.triples)
         writer.close()
 

@@ -27,6 +27,10 @@ class DCTERMS(object):
 class XSD(object):
     dateTime      = "http://www.w3.org/2001/XMLSchema#dateTime"
 
+class FOAF(object):
+    primaryTopic = "http://xmlns.com/foaf/0.1/primaryTopic"
+    topic = "http://xmlns.com/foaf/0.1/topic"
+
 class SIOC(object):
     container_of = "http://rdfs.org/sioc/ns#container_of"
     has_creator  = "http://rdfs.org/sioc/ns#has_creator"
@@ -49,6 +53,7 @@ namespaces = [("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#"),
               ("dc", "http://purl.org/dc/elements/1.1/"),
               ("dcterms", "http://purl.org/dc/terms/"),
               ("xsd", "http://www.w3.org/2001/XMLSchema#"),
+              ("foaf", "http://xmlns.com/foaf/0.1/"),
               ("sioc", "http://rdfs.org/sioc/ns#"),
               ("sioct", "http://rdfs.org/sioc/types#"),
               ("ds", "http://fenfire.org/2007/03/discussion-summaries#"),
