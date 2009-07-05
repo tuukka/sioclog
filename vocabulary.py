@@ -30,6 +30,7 @@ class XSD(object):
 class FOAF(object):
     primaryTopic = "http://xmlns.com/foaf/0.1/primaryTopic"
     topic = "http://xmlns.com/foaf/0.1/topic"
+    holdsAccount = "http://xmlns.com/foaf/0.1/holdsAccount"
 
 class SIOC(object):
     container_of = "http://rdfs.org/sioc/ns#container_of"
