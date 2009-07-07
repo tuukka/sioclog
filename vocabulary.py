@@ -31,6 +31,13 @@ class FOAF(object):
     primaryTopic = "http://xmlns.com/foaf/0.1/primaryTopic"
     topic = "http://xmlns.com/foaf/0.1/topic"
     holdsAccount = "http://xmlns.com/foaf/0.1/holdsAccount"
+    homepage = "http://xmlns.com/foaf/0.1/homepage"
+    weblog = "http://xmlns.com/foaf/0.1/weblog"
+    nick = "http://xmlns.com/foaf/0.1/nick"
+    name = "http://xmlns.com/foaf/0.1/name"
+    firstName = "http://xmlns.com/foaf/0.1/firstName"
+    img = "http://xmlns.com/foaf/0.1/img"
+    depiction = "http://xmlns.com/foaf/0.1/depiction"
 
 class SIOC(object):
     container_of = "http://rdfs.org/sioc/ns#container_of"

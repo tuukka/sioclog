@@ -19,16 +19,7 @@ from ircbase import parseprefix, Line, Irc
 from turtle import PlainLiteral, TypedLiteral, TurtleWriter
 from vocabulary import namespaces, RDF, RDFS, OWL, DC, DCTERMS, XSD, FOAF, SIOC, SIOCT, DS
 
-def escape_html(s):
-    # & needs to be escaped first, before more are introduced:
-    s = s.replace('&', '&amp;')
-    s = s.replace('<', '&lt;')
-    s = s.replace('>', '&gt;')
-    s = s.replace('"', '&quot;')
-    return s
-
-def escape_htmls(*args):
-    return tuple(map(escape_html, args))
+from htmlutil import escape_html, escape_htmls
 
 datetimere = r"(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(\.\d+)?"
 timezonere = r"(Z|(\+|-)(\d{2}):(\d{2}))"

@@ -12,7 +12,7 @@ import cgi, os
 from channellog import OffFilter, ChannelFilter, TimeFilter, HtmlSink, TurtleSink, RawSink, ChannelsAndDaysSink, run
 from turtle import PlainLiteral, TypedLiteral, TurtleWriter
 from vocabulary import namespaces, RDF, RDFS, OWL, DC, DCTERMS, XSD, FOAF, SIOC, SIOCT, DS
-from users import find_person
+from users import render_user, render_user_index
 
 def runcgi(logfile):
     HTTP_HOST = os.environ.get('HTTP_HOST', "")
@@ -90,49 +90,10 @@ def runcgi(logfile):
         print
 
     if restype == "users" and channel:
-        if format == "html":
-            print """<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE html 
-     PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
-<head>
-<title>%s</title>
-<link rel="meta" href="http://triplr.org/rdf/%s" type="application/rdf+xml" title="SIOC"/>""" % ("User %s" % channel, datauri)
-
-            print """<h1>User %s</h1>""" % channel
-            print """<p>Available formats: <a href="%s">content-negotiated</a> <a href="%s.html">html</a> <a href="%s.turtle">turtle</a> (see <a href="http://sioc-project.org">SIOC</a> for the vocabulary) </p>""" % (datauri, datauri, datauri)
-
-            personURI = find_person(channel)
-            if personURI:
-                print """
-<p>The person holding this user account has the Web ID (FOAF) 
-<a href="%s">%s</a>.</p>
-""" % (personURI, personURI)
-        elif format == "turtle":
-            userURI = "http://irc.sioc-project.org/users/%s#user" % channel
-            oldUserURI = "irc://freenode/%s,isuser" % channel
-            triples = [None,
-                       (datarooturi + "#freenode", SIOC.space_of, userURI),
-                       (userURI, OWL.sameAs, oldUserURI),
-                       (userURI, RDFS.label, PlainLiteral(channel)),
-                       (userURI, RDF.type, SIOC.User),
-                       ]
-            personURI = find_person(channel)
-            if personURI:
-                triples += [None, (personURI, FOAF.holdsAccount, userURI)]
-            writer = TurtleWriter(None, namespaces)
-            title = "About user %s" % channel
-            writer.write([("", RDFS.label, PlainLiteral(title)),
-                          ("", FOAF.primaryTopic, userURI),
-                          ])
-            writer.write(triples)
-            writer.close()
-
+        render_user(format, datarooturi, channel, datauri)
     elif restype == "users":
         # show user index
-        if format == "html":
-            print """<h1>Users</h1>"""
+        render_user_index(format, datarooturi, datauri)
     elif channel and timeprefix:
         # show log
         if format == "html":

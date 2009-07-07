@@ -74,10 +74,16 @@ class TurtleWriter(object):
 class PlainLiteral:
     """RDF plain literal"""
     def __init__(self, text):
-        self.text = str(text)
+        if isinstance(text, unicode):
+            self.text = text.encode("utf-8")
+        else:
+            self.text = str(text)
 
 class TypedLiteral:
     """RDF typed literal"""
     def __init__(self, text, literaltype):
-        self.text = str(text)
+        if isinstance(text, unicode):
+            self.text = text.encode("utf-8")
+        else:
+            self.text = str(text)
         self.literaltype = literaltype
