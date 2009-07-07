@@ -13,62 +13,29 @@ from vocabulary import namespaces, RDF, RDFS, OWL, FOAF, SIOC
 
 from htmlutil import escape_html as html_escape, escape_htmls as html_escapes
 
-mttlbot_knowledge_nt = """<http://www.kjetil.kjernsmo.net/foaf#me> <http://xmlns.com/foaf/0.1/holdsAccount> <irc://192.168.100.27/kjetilkWork,isnick> .
-<http://www.kjetil.kjernsmo.net/foaf#me> <http://xmlns.com/foaf/0.1/holdsAccount> <irc://192.168.100.27/KjetilK,isnick> .
-<http://www.dajobe.org/foaf.rdf#i> <http://xmlns.com/foaf/0.1/holdsAccount> <irc://192.168.100.27/dajobe,isnick> .
-<http://kidehen.idehen.net/dataspace/person/kidehen#this> <http://xmlns.com/foaf/0.1/holdsAccount> <irc://192.168.100.27/kidehen,isnick> .
-<http://danbri.org/foaf.rdf#danbri> <http://xmlns.com/foaf/0.1/holdsAccount> <irc://192.168.100.27/danbri,isnick> .
-<http://presbrey.mit.edu/foaf.rdf#presbrey> <http://xmlns.com/foaf/0.1/holdsAccount> <irc://192.168.100.27/presbrey,isnick> .
-<http://dig.csail.mit.edu/People/kennyluck#I> <http://xmlns.com/foaf/0.1/holdsAccount> <irc://192.168.100.27/kennyluck,isnick> .
-<http://www.w3.org/People/Berners-Lee/card#i> <http://xmlns.com/foaf/0.1/holdsAccount> <irc://192.168.100.27/timbl,isnick> .
-<http://swordfish.rdfweb.org/people/libby/rdfweb/webwho.xrdf#me> <http://xmlns.com/foaf/0.1/holdsAccount> <irc://192.168.100.27/libby,isnick> .
-<http://tobyinkster.co.uk/#i> <http://xmlns.com/foaf/0.1/holdsAccount> <irc://192.168.100.27/tobyink,isnick> .
-<http://tobyinkster.co.uk/#i> <http://xmlns.com/foaf/0.1/holdsAccount> <irc://192.168.100.27/tobyink1,isnick> .
-<http://simon-reinhardt.de/#me> <http://xmlns.com/foaf/0.1/holdsAccount> <irc://192.168.100.27/Shepard,isnick> .
-<http://plugin.org.uk/swh.xrdf#me> <http://xmlns.com/foaf/0.1/holdsAccount> <irc://192.168.100.27/swh,isnick> .
-<http://www.cs.univie.ac.at/foaf.php?eid=223#me> <http://xmlns.com/foaf/0.1/holdsAccount> <irc://192.168.100.27/besbes,isnick> .
-<http://thefigtrees.net/id#lee> <http://xmlns.com/foaf/0.1/holdsAccount> <irc://192.168.100.27/LeeF,isnick> .
-<http://sw-app.org/mic.xhtml#i> <http://xmlns.com/foaf/0.1/holdsAccount> <irc://192.168.100.27/mhausenblas,isnick> .
-<http://myopenlink.net/dataspace/person/tthibodeau#this> <http://xmlns.com/foaf/0.1/holdsAccount> <irc://192.168.100.27/MacTed,isnick> .
-<http://csarven.ca/foaf#sarvencapadisli> <http://xmlns.com/foaf/0.1/holdsAccount> <irc://192.168.100.27/csarven,isnick> .
-<http://buzzword.org.uk/2009/mttlbot/#bot> <http://xmlns.com/foaf/0.1/holdsAccount> <irc://192.168.100.27/mttlbot,isnick> .
-<http://plugin.org.uk/swh.xrdf> <http://xmlns.com/foaf/0.1/holdsAccount> <irc://192.168.100.27/swh,isnick> .
-<http://people.apache.org/~oshani/foaf.rdf#me> <http://xmlns.com/foaf/0.1/holdsAccount> <irc://192.168.100.27/oshani,isnick> .
-<http://bnode.org/grawiki/bengee#self> <http://xmlns.com/foaf/0.1/holdsAccount> <irc://192.168.100.27/bengee,isnick> .
-<http://identi.ca/user/33> <http://xmlns.com/foaf/0.1/holdsAccount> <irc://192.168.100.27/csarven,isnick> .
-<http://kasei.us/about/foaf.xrdf#greg> <http://xmlns.com/foaf/0.1/holdsAccount> <irc://192.168.100.27/kasei,isnick> .
-<http://identi.ca/user/9577> <http://xmlns.com/foaf/0.1/holdsAccount> <irc://192.168.100.27/mattl,isnick> .
-<http://blog.reallywow.com/foaf#me> <http://xmlns.com/foaf/0.1/holdsAccount> <irc://192.168.100.27/lbjay,isnick> .
-<http://keithalexander.co.uk/id/me> <http://xmlns.com/foaf/0.1/holdsAccount> <irc://192.168.100.27/kwijibo_,isnick> .
-<http://keithalexander.co.uk/id/me> <http://xmlns.com/foaf/0.1/holdsAccount> <irc://192.168.100.27/kwijibo,isnick> .
-<http://richard.cyganiak.de/foaf.rdf#cygri> <http://xmlns.com/foaf/0.1/holdsAccount> <irc://192.168.100.27/cygri,isnick> .
-<http://foaf.me/melvincarvalho#me> <http://xmlns.com/foaf/0.1/holdsAccount> <irc://192.168.100.27/melvster,isnick> .
-<http://moustaki.org/foaf.rdf#moustaki> <http://xmlns.com/foaf/0.1/holdsAccount> <irc://192.168.100.27/yvesr,isnick> .
-<http://bblfish.net/people/henry/card#me> <http://xmlns.com/foaf/0.1/holdsAccount> <irc://192.168.100.27/bblfish,isnick> .
-<http://captsolo.net/semweb/foaf-captsolo.rdf#Uldis_Bojars> <http://xmlns.com/foaf/0.1/holdsAccount> <irc://192.168.100.27/CaptSolo,isnick> .
-<http://mmt.me.uk/foaf.rdf#mischa> <http://xmlns.com/foaf/0.1/holdsAccount> <irc://192.168.100.27/mischat,isnick> .
-<http://www.w3.org/People/Connolly/#me> <http://xmlns.com/foaf/0.1/holdsAccount> <irc://192.168.100.27/DanC,isnick> .
-<http://tommorris.org/foaf#me> <http://xmlns.com/foaf/0.1/holdsAccount> <irc://192.168.100.27/tommorris,isnick> .
-"""
+def get_mttlbot_knowledge():
+    global Red
+    import RDF as Red
+    m = Red.Model()
+    # XXX for some reason, need to hardcode the returned content-type
+    m.load("http://buzzword.org.uk/2009/mttlbot/graphs/knowledge", 
+           name='guess')
+    return m
 
-mttlbot_knowledge = [tuple([res[1:-1] for res in t.split(" ")]) 
-                     for t in mttlbot_knowledge_nt.split(" .\n") 
-                     if t]
+def get_nick2people():
+    m = get_mttlbot_knowledge()
+    nick2people = {}
+    for t in m.find_statements(Red.Statement(None, Red.Uri(FOAF.holdsAccount), None)):
+        nick = str(t.object.uri).rsplit(",", 1)[0][len("irc://192.168.100.27/"):]
+        nick2people[nick] = str(t.subject.uri)
+    return nick2people
 
 def get_nicks():
-    matches = set(o.rsplit(",", 1)[0][len("irc://192.168.100.27/"):] 
-                  for (s,p,o) in mttlbot_knowledge
-                  if p == FOAF.holdsAccount)
-    return sorted(matches)
+    return sorted(get_nick2people())
 
 def find_person(nick):
-    mttlbot_uri = "irc://192.168.100.27/%s,isnick" % nick
-    matches = [s for (s,p,o) in mttlbot_knowledge
-               if p == FOAF.holdsAccount and o == mttlbot_uri]
-    if matches:
-        return matches[0]
-    else:
-        return None
+    nick2people = get_nick2people()
+    return nick2people.get(nick, None)
 
 def get_values(model, subject, properties):
     values = []
@@ -163,7 +130,7 @@ def render_user(format, datarooturi, nick, datauri):
     # XXX work around a bug in Redland?
     if person:
         try:
-            model.load(person.rsplit('#', 1)[0])
+            model.load(person.rsplit('#', 1)[0], name='guess')
         except:
             if format == "html":
                 print """Error loading the FOAF info: %s""" % html_escape(sys.exc_info()[1])
@@ -267,7 +234,7 @@ if __name__ == '__main__':
     
     model = Red.Model()
     # XXX work around a bug in RDF?
-    model.load(person.rsplit('#', 1)[0])
+    model.load(person.rsplit('#', 1)[0], name='guess')
 #    print model
 #    for t in model.find_statements(RDF.Statement(RDF.Uri(person), None, None)):
 #        print t.predicate, t.object
