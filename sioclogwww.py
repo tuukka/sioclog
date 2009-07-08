@@ -262,6 +262,12 @@ actions.
 rm=searchbox_009180828701492049973%3A6ly79qxejks&lang=en"></script> -->
 <!-- Google CSE Search Box Ends -->"""
 
+    if not querychannel:
+        print """<h2>Channels</h2>"""
+        print """<p><em>See also <a href="%s">users</a>.</p>""" % (root + "users")
+    else:
+        print """<h2>Daily logs</h2>"""
+
     print "<table>"
     print "<thead><tr><th></th>"
     for channel in channels:
