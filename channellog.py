@@ -67,6 +67,18 @@ class AddZTimeFilter(IrcFilter):
         line.ztime = convert_timestamp_to_z(line.time)
         self.sink.handleReceived(line)
 
+class AddRegisteredFilter(IrcFilter):
+    def irc_PRIVMSG(self, line):
+        content = line.args[1]
+        if content[0] in ["+", "-"]:
+            line.registered = content[0]
+            line.args[1] = content[1:]
+        else:
+            line.registered = None
+
+    def handleReceivedFallback(self, line):
+        self.sink.handleReceived(line)
+
 class ChannelFilter(IrcFilter):
     """A filter that only passes on lines related to a given channel"""
     def __init__(self, channel, sink):
@@ -410,7 +422,7 @@ class ChannelsAndDaysSink(IrcSink):
 
 def run(inputstream, pipeline):
     """Processes each line from the input in the pipeline and closes it"""
-    pipeline = AddZTimeFilter(pipeline)
+    pipeline = AddRegisteredFilter(AddZTimeFilter(pipeline))
     for l in inputstream:
         #print l
         time, linestr = l[:-1].split(" ",1)

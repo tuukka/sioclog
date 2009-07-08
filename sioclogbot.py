@@ -118,6 +118,9 @@ class IrcServer(Irc):
 
         self.ping()
 
+        # enable + or - prefix on each msg indicating 
+        self.sendLine(Line("CAPAB", ["IDENTIFY-MSG"]))
+
         for c in self.factory.channels:
             self.sendLine(Line("JOIN", [c]))
             
