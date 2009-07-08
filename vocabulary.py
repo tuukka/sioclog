@@ -38,6 +38,7 @@ class FOAF(object):
     firstName = "http://xmlns.com/foaf/0.1/firstName"
     img = "http://xmlns.com/foaf/0.1/img"
     depiction = "http://xmlns.com/foaf/0.1/depiction"
+    knows = "http://xmlns.com/foaf/0.1/knows"
 
 class SIOC(object):
     container_of = "http://rdfs.org/sioc/ns#container_of"

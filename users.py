@@ -13,10 +13,15 @@ from vocabulary import namespaces, RDF, RDFS, OWL, FOAF, SIOC
 
 from htmlutil import escape_html as html_escape, escape_htmls as html_escapes
 
+mttlbot_knowledge = None
+
 def get_mttlbot_knowledge():
+    global mttlbot_knowledge
+    if mttlbot_knowledge is not None:
+        return mttlbot_knowledge
     global Red
     import RDF as Red
-    m = Red.Model()
+    m = mttlbot_knowledge = Red.Model()
     # XXX for some reason, need to hardcode the returned content-type
     m.load("http://buzzword.org.uk/2009/mttlbot/graphs/knowledge", 
            name='guess')
@@ -73,6 +78,20 @@ def image_values(model, subject, property):
             yield html_escape(value.literal_value['string'])
         elif value.is_resource():
             yield """<img src="%s" />""" % html_escapes(value.uri)
+
+def friend_values(model, subject, property):
+    values = get_values(model, subject, property)
+    nick2people = get_nick2people()
+    for value in values:
+        if value is None:
+            yield None
+        elif value.is_literal():
+            yield html_escape(value.literal_value['string'])
+        elif value.is_resource():
+            for nick,person in nick2people.items():
+                if str(value.uri) == person:
+                    user = "http://irc.sioc-project.org/users/%s#user" % nick
+                    yield """<a href="%s">%s</a>""" % html_escapes(user, nick)
 
 def get_triples(model, subject, properties):
     for property in properties:
@@ -191,6 +210,8 @@ img {
                 print "<tr><th>Weblog</th><td>%s</td></tr>" % weblog
             for img in image_values(model, person, [FOAF.depiction, FOAF.img]):
                 print "<tr><th>Image</th><td>%s</td></tr>" % img
+            for known in friend_values(model, person, [FOAF.knows]):
+                print "<tr><th>Knows</th><td>%s</td></tr>" % known
             print "</table>"
         else:
             print """
