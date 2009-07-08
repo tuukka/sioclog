@@ -159,22 +159,22 @@ def turtle_index(sink, root, selfuri, querychannel):
             logURI = "%s%s/%s" % (root, channelID, day)
             triples += [(channelURI, RDFS.seeAlso, logURI)]
 
-        writer = TurtleWriter(None, namespaces)
-        if querychannel and channels:
-            title = "Index of #%s" % channels[0]
-            writer.write([("", FOAF.primaryTopic, channelURIs[0])])
-        elif querychannel:
-            title = "Empty index"
-        else:
-            title = "Index of some IRC discussion logs"
-            writer.write([("", FOAF.primaryTopic, freenodeURI)])
-            writer.write([("", FOAF.topic, channelURI)
-                         for channelURI in channelURIs])
-        writer.write([("", RDFS.label, PlainLiteral(title))])
+    writer = TurtleWriter(None, namespaces)
+    if querychannel and channels:
+        title = "Index of #%s" % channels[0]
+        writer.write([("", FOAF.primaryTopic, channelURIs[0])])
+    elif querychannel:
+        title = "Empty index"
+    else:
+        title = "Index of some IRC discussion logs"
+        writer.write([("", FOAF.primaryTopic, freenodeURI)])
+        writer.write([("", FOAF.topic, channelURI)
+                     for channelURI in channelURIs])
+    writer.write([("", RDFS.label, PlainLiteral(title))])
 
-        writer.setBase(root)
-        writer.write(triples)
-        writer.close()
+    writer.setBase(root)
+    writer.write(triples)
+    writer.close()
 
 def html_index(sink, root, selfuri, querychannel):
 
