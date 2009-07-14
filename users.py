@@ -119,7 +119,9 @@ def render_user_index(format, datarooturi, datauri):
         print """<h1>Some IRC users</h1>"""
         print """<p>Available formats: <a href="%s">content-negotiated</a> <a href="%s.html">html</a> <a href="%s.turtle">turtle</a> (see <a href="http://sioc-project.org">SIOC</a> for the vocabulary) </p>""" % html_escapes(datauri, datauri, datauri)
         print """
-<p>This list contains those users of Freenode IRC whose Web ID is known.</p>
+<p>This list contains those users of Freenode IRC whose Web ID is known. <em>If you'd like to 
+participate, please join channel #swig or #mttlbot-testing, and tell 
+<a href="http://buzzword.org.uk/2009/mttlbot/#bot">mttlbot</a> your Web ID.</em></p>
 <ul>"""
         for nick in nicks:
             user = "http://irc.sioc-project.org/users/%s#user" % nick
@@ -216,7 +218,8 @@ img {
         else:
             print """
 <p>Nothing known about this person, because no Web ID (FOAF) known for this 
-user.</p>
+user. <em>If you are this person, please join channel #swig or #mttlbot-testing, and tell 
+<a href="http://buzzword.org.uk/2009/mttlbot/#bot">mttlbot</a> your Web ID.</em></p>
 </td></tr></table>"""
         print """
 <p>Back to user index: <a href="/users">content-negotiated</a> <a href="/users.html">html</a> <a href="/users.turtle">turtle</a></p>
