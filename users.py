@@ -64,7 +64,7 @@ def link_values(model, subject, property):
         if value is None:
             yield None
         elif value.is_literal():
-            yield html_escape(value.literal_value['string'])
+            yield html_escape(value.literal_value['string'].encode('utf-8'))
         elif value.is_resource():
             yield """<a href="%s">%s</a>""" % html_escapes(value.uri, value.uri)
 
