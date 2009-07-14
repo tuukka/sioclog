@@ -229,11 +229,17 @@ img {
     else:
         print """
 <div class="logo-bar">
-<a href="http://fenfire.org"><img src="http://fenfire.org/logo.png" alt="Fenfire
-" title="The Fenfire project" /></a>
+<a href="http://fenfire.org/"><img src="http://fenfire.org/logo.png" 
+alt="Fenfire" title="The Fenfire project" /></a>
 <br />
-<a href="http://sioc-project.org/"><img src="http://sioc-project.org/files/sioc_
-button.gif" alt="SIOC" title="Semantically-Interlinked Online Communities"/></a>
+<a href="http://sioc-project.org/"><img src="http://sioc-project.org/files/sioc_button.gif" 
+alt="SIOC" title="Semantically-Interlinked Online Communities" /></a>
+<br />
+<a href="http://linkeddata.org/"><img src="http://irc.sioc-project.org/images/linkingopendata.png"
+width="100" alt="Linked Data" title="Linked Data" /></a>
+<br />
+<a href="http://www.w3.org/RDF/"><img src="http://www.w3.org/RDF/icons/rdf_w3c_icon.96"
+alt="RDF" title="RDF Resource Description Framework" /></a>
 </div>
 
 <p>The URIs of unspecified format are content-negotiated and can thus be 
