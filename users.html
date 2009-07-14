@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-type" content="text/html; charset=UTF-8" />
+<title>User index</title>
+<link tal:attributes="href string:http://triplr.org/rdf/${datauri}" 
+      rel="meta" type="application/rdf+xml" title="SIOC"
+      href="http://triplr.org/rdf/http://example.org/exampleData" />
+</head>
+<body>
+<h1>Some IRC users</h1>
+<p>Available formats: 
+<a tal:attributes="href string:${datauri}"
+   href="http://example.org/exampleData">content-negotiated</a> 
+<a tal:attributes="href string:${datauri}.html"
+   href="http://example.org/exampleData.html">html</a> 
+<a tal:attributes="href string:${datauri}.turtle"
+   href="http://example.org/exampleData.turtle">turtle</a> 
+(see <a href="http://sioc-project.org">SIOC</a> for the vocabulary) </p>
+
+<p>This list contains those users of Freenode IRC whose Web ID is known. 
+<em>If you'd like to 
+participate, please join channel #swig or #mttlbot-testing, and tell 
+<a href="http://buzzword.org.uk/2009/mttlbot/#bot">mttlbot</a> your Web ID.</em>
+</p>
+
+<ul>
+<li tal:repeat="user users">
+<a tal:attributes="href user/uri" tal:content="user/nick"
+   href="http://example.org/exampleUser">exampleNick</a>
+</li>
+</ul>
+
+<p>Rendered by <a href="http://github.com/tuukka/sioclog/blob/master/sioclogwww.py">sioclogwww.py</a>.</p>
+<p>
+  <a href="http://validator.w3.org/check?uri=referer"><img
+     src="http://www.w3.org/Icons/valid-xhtml10"
+     alt="Valid XHTML 1.0 Strict" height="31" width="88" /></a>
+</p>
+
+</body>
+</html>

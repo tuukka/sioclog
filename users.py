@@ -11,6 +11,7 @@ import sys
 from turtle import PlainLiteral, TypedLiteral, TurtleWriter
 from vocabulary import namespaces, RDF, RDFS, OWL, FOAF, SIOC
 
+from templating import new_context, get_template, expand_template
 from htmlutil import escape_html as html_escape, escape_htmls as html_escapes
 
 mttlbot_knowledge = None
@@ -106,26 +107,20 @@ def render_user_index(format, datarooturi, datauri):
     freenodeURI = datarooturi + "#freenode"
     nicks = get_nicks()
     if format == "html":
-        print """<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE html 
-     PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
-<head>
-<title>%s</title>
-<link rel="meta" href="http://triplr.org/rdf/%s" type="application/rdf+xml" title="SIOC"/>
-""" % html_escapes("User index", datauri)
+        context = new_context()
+        context.addGlobal('datarooturi', datarooturi)
+        context.addGlobal('datauri', datauri)
 
-        print """<h1>Some IRC users</h1>"""
-        print """<p>Available formats: <a href="%s">content-negotiated</a> <a href="%s.html">html</a> <a href="%s.turtle">turtle</a> (see <a href="http://sioc-project.org">SIOC</a> for the vocabulary) </p>""" % html_escapes(datauri, datauri, datauri)
-        print """
-<p>This list contains those users of Freenode IRC whose Web ID is known. <em>If you'd like to 
-participate, please join channel #swig or #mttlbot-testing, and tell 
-<a href="http://buzzword.org.uk/2009/mttlbot/#bot">mttlbot</a> your Web ID.</em></p>
-<ul>"""
+        users = []
         for nick in nicks:
             user = "http://irc.sioc-project.org/users/%s#user" % nick
-            print """<li><a href="%s">%s</a></li>""" % html_escapes(user, nick)
+            users.append({'uri': user, 'nick': nick})
+
+        context.addGlobal('users', users)
+
+        template = get_template('users')
+        expand_template(template, context)
+
     elif format == "turtle":
         triples = []
         for nick in nicks:
