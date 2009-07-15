@@ -16,10 +16,9 @@ import ircbase
 ircbase.dbg = False
 from ircbase import parseprefix, Line, Irc
 
+from templating import new_context, get_template, expand_template
 from turtle import PlainLiteral, TypedLiteral, TurtleWriter
 from vocabulary import namespaces, RDF, RDFS, OWL, DC, DCTERMS, XSD, FOAF, SIOC, SIOCT, DS
-
-from htmlutil import escape_html, escape_htmls
 
 datetimere = r"(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(\.\d+)?"
 timezonere = r"(Z|(\+|-)(\d{2}):(\d{2}))"
@@ -238,41 +237,12 @@ class HtmlSink(IrcSink):
 
         self.root = root
         self.channel = channel
+        self.timeprefix = timeprefix
+        self.datauri = selfuri
 
-        channelID = self.channel.strip("#").lower()
-        channelURI = self.root + channelID + "#channel"
+        self.title = "#%s on %s" % (channel, timeprefix)
 
-        print """<html>
-<head>
-<title>#%s on %s</title>
-<link rel="meta" href="http://triplr.org/rdf/%s" type="application/rdf+xml" title="SIOC"/>
-<style type="text/css"><!--
-td {
-    vertical-align: top;
-}
-
-td > a:target {
-    background-color: lightblue;
-}
---></style>
-</head>
-<body>
-<h1>Discussion log for channel <a href="%s">#%s</a> on %s</h1>
-<p>Available formats: <a href="%s">content-negotiated</a> <a href="%s.html">html</a> <a href="%s.turtle">turtle</a> (see <a href="http://sioc-project.org">SIOC</a> for the vocabulary) <a href="%s.txt">raw</a></p>
-<p>Back to channel and daily index: <a href="/index">content-negotiated</a> <a href="/index.html">html</a> <a href="/index.turtle">turtle</a></p>
-<div style="color: 9999CC; background: #CCCCFF; border: 3px dashed; padding: 1em; margin: 1em;">
-<p style="color: black; margin: 0">
-These logs are provided as an experiment in indexing discussions using 
-<a href="http://sioc-project.org">SIOC</a>. 
-</p>
-</div>
-<em>
-Times are in UTC/GMT.
-</em>
-<table>""" % escape_htmls(channel, timeprefix, 
-                          selfuri, 
-                          channelURI, channel, timeprefix,
-                          selfuri, selfuri, selfuri, selfuri)
+        self.events = []
 
     def irc_PRIVMSG(self, line):
         id = line.ztime.split("T")[1][:-1] # FIXME not unique
@@ -281,28 +251,32 @@ Times are in UTC/GMT.
         content = line.args[1]
         creator = self.root + "users/" + nick + "#user"
         action, content = parse_action(content)
-        if action:
-            print """<tr>
-<td><a name="%s" href="#%s">%s</a></td>
-<td> * </td>
-<td><a href="%s">%s</a> %s</td>
-</tr>""" % escape_htmls(id, id, time, creator, nick, content)
-        else:
-            print """<tr>
-<td><a name="%s" href="#%s">%s</a></td>
-<td>&lt;<a href="%s">%s</a>&gt;</td>
-<td>%s</td>
-</tr>""" % escape_htmls(id, id, time, creator, nick, content)
+        self.events.append({'id': id, 'time': time, 
+                            'isAction': action,
+                            'creator': creator, 'nick': nick, 
+                            'content': content})
 
     handleReceivedFallback = lambda self,x:None
 
     def close(self):
-        print """</table>
-<p>Back to channel and daily index: <a href="/index">content-negotiated</a> <a href="/index.html">html</a> <a href="/index.turtle">turtle</a></p>
+        context = new_context()
+        context.addGlobal('datarooturi', self.root)
+        context.addGlobal('datauri', self.datauri)
 
-<p>Rendered by <a href="http://github.com/tuukka/sioclog/blob/master/sioclogwww.py">sioclogwww.py</a>.</p>
-</body>
-</html>"""
+        channelID = self.channel.strip("#").lower()
+        channelURI = self.root + channelID + "#channel"
+
+        context.addGlobal('channel', {'name': channelID,
+                                      'uri': channelURI})
+        context.addGlobal('timeprefix', self.timeprefix)
+
+        context.addGlobal('title', self.title)
+
+        context.addGlobal('events', self.events)
+
+        template = get_template('channellog')
+        expand_template(template, context)
+
 
 class TurtleSink(IrcSink):
     """A sink that renders the lines it receives as a Turtle RDF document"""

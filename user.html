@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en"
+      xmlns:tal="http://xml.zope.org/namespaces/tal">
+<!-- This is a template file that is expanded using SimpleTAL. -->
+<!-- The tal: names direct the expansion. -->
+<head>
+<meta http-equiv="Content-type" content="text/html; charset=UTF-8" />
+<title tal:content="string:User ${here/nick}">User exampleUser</title>
+<link tal:attributes="href string:http://triplr.org/rdf/${datauri}" 
+      rel="meta" type="application/rdf+xml" title="SIOC"
+      href="http://triplr.org/rdf/http://example.org/exampleData" />
+<style type="text/css"><!--
+div.logo-bar {
+    float: right;
+    text-align: center;
+
+//    background: #CCCCFF;
+
+    border-style: solid;
+    border-color: #9999CC;
+    border-width: 2px;
+}
+th {
+    text-align: left;
+}
+th, td { 
+    vertical-align: top;
+}
+img {
+    border: none;
+    margin: 1em;
+}
+--></style>
+</head>
+<body>
+<h1 tal:content="string:User ${here/nick}">User exampleUser</h1>
+<p>Available formats: 
+<a tal:attributes="href string:${datauri}"
+   href="http://example.org/exampleData">content-negotiated</a> 
+<a tal:attributes="href string:${datauri}.html"
+   href="http://example.org/exampleData.html">html</a> 
+<a tal:attributes="href string:${datauri}.turtle"
+   href="http://example.org/exampleData.turtle">turtle</a> 
+(see <a href="http://sioc-project.org">SIOC</a> for the vocabulary) </p>
+
+<table><tr><td>
+<img src="http://irc.sioc-project.org/images/foaf.png" align="left" />
+</td><td>
+
+<p tal:condition="here/person/webid">
+The person holding this user account has the Web ID (FOAF) of <br />
+<tt><a tal:attributes="href here/person/webid" 
+       tal:content="here/person/webid"
+       href="http://example.org/webid">
+http://example.org/webid</a></tt>.
+</p>
+<p tal:condition="not:here/person/webid">
+Nothing known about this person, because no Web ID (FOAF) known for this user.
+<em>If you are this person, please join channel #swig or #mttlbot-testing, 
+and tell 
+<a href="http://buzzword.org.uk/2009/mttlbot/#bot">mttlbot</a>
+your Web ID.</em>
+</p>
+
+</td></tr></table>
+<p tal:condition="error" tal:content="error">
+Example error message.
+</p>
+<table tal:condition="here/person/info">
+<tr tal:repeat="entry here/person/info">
+<th tal:content="structure entry/key">ExampleKey</th>
+<td tal:content="structure entry/value">ExampleValue</td>
+</tr>
+</table>
+
+<p>Back to user index: <a href="/users">content-negotiated</a> <a href="/users.html">html</a> <a href="/users.turtle">turtle</a></p>
+
+<p>Rendered by <a href="http://github.com/tuukka/sioclog">sioclog</a>.</p>
+</body>
+</html>

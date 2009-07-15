@@ -10,6 +10,7 @@ runcgi("sioclogbot.log")
 import cgi, os
 
 from channellog import OffFilter, ChannelFilter, TimeFilter, HtmlSink, TurtleSink, RawSink, ChannelsAndDaysSink, run
+from templating import new_context, get_template, expand_template
 from turtle import PlainLiteral, TypedLiteral, TurtleWriter
 from vocabulary import namespaces, RDF, RDFS, OWL, DC, DCTERMS, XSD, FOAF, SIOC, SIOCT, DS
 from users import render_user, render_user_index
@@ -130,7 +131,7 @@ def runcgi(logfile):
             turtle_index(sink, datarooturi, datauri, channel)
         # XXX more formats
 
-def turtle_index(sink, root, selfuri, querychannel):
+def turtle_index(sink, root, datauri, querychannel):
     triples = []
 
     freenodeURI = root + "#freenode"
@@ -176,7 +177,11 @@ def turtle_index(sink, root, selfuri, querychannel):
     writer.write(triples)
     writer.close()
 
-def html_index(sink, root, selfuri, querychannel):
+def html_index(sink, root, datauri, querychannel):
+    context = new_context()
+    context.addGlobal('datarooturi', root)
+    context.addGlobal('datauri', datauri)
+    context.addGlobal('querychannel', querychannel)
 
     channels = sorted(sink.channels.keys())
 
@@ -185,115 +190,34 @@ def html_index(sink, root, selfuri, querychannel):
     else:
         title = "Some IRC discussion logs"
 
-    print """<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE html 
-     PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
-<head>
-<title>%s</title>
-<link rel="meta" href="http://triplr.org/rdf/%s" type="application/rdf+xml" title="SIOC"/>
-<style type="text/css"><!--
-div.logo-bar {
-    float: right;
-    text-align: center;
+    context.addGlobal('title', title)
 
-//    background: #CCCCFF;
-
-    border-style: solid;
-    border-color: #9999CC;
-    border-width: 2px;
-}
-td { 
-    vertical-align: top;
-}
-img {
-    border: none;
-    margin: 1em;
-}
---></style>
-</head>
-<body>""" % (title, selfuri)
-
-    if selfuri == root:
-        selfuri2 = root + "index"
+    if datauri == root:
+        datauri2 = root + "index"
     else:
-        selfuri2 = selfuri
+        datauri2 = datauri
 
-    print "<h1>%s</h1>" % title
-    print """<p>Available formats: <a href="%s">content-negotiated</a> <a href="%s.html">html</a> <a href="%s.turtle">turtle</a> (see <a href="http://sioc-project.org">SIOC</a> for the vocabulary) </p>""" % (selfuri, selfuri2, selfuri2)
+    context.addGlobal('datauri2', datauri2)
 
-    if querychannel:
-        print """<p>This is a discussion channel on the Freenode IRC network.
-</p>"""
-    else:
-        print """
-<div class="logo-bar">
-<a href="http://fenfire.org/"><img src="http://fenfire.org/logo.png" 
-alt="Fenfire" title="The Fenfire project" /></a>
-<br />
-<a href="http://sioc-project.org/"><img src="http://sioc-project.org/files/sioc_button.gif" 
-alt="SIOC" title="Semantically-Interlinked Online Communities" /></a>
-<br />
-<a href="http://linkeddata.org/"><img src="http://irc.sioc-project.org/images/linkingopendata.png"
-width="100" alt="Linked Data" title="Linked Data" /></a>
-<br />
-<a href="http://www.w3.org/RDF/"><img src="http://www.w3.org/RDF/icons/rdf_w3c_icon.96"
-alt="RDF" title="RDF Resource Description Framework" /></a>
-</div>
-
-<p>The URIs of unspecified format are content-negotiated and can thus be 
-opened equally well in web browsers and in RDF browsers such 
-as <a href="http://fenfire.org/">Fenfire</a>. The RDF data uses the 
-SIOC vocabulary (see the <a href="http://sioc-project.org/">
-Semantically-Interlinked Online Communities Project</a> for details).</p>
-""" 
-
-    print """
-<p><strong>Privacy notice:</strong> In line with Freenode policy, it is 
-possible to exclude your lines from these logs. Based on a common convention, 
-you can achieve this by prepending <code>[off]</code> to your messages and 
-actions.
-</p>
-<!-- Google CSE Search Box Begins  -->
-<form action="http://www.google.com/cse" id="searchbox_009180828701492049973:6ly
-79qxejks">
-  <p>
-  <input type="hidden" name="cx" value="009180828701492049973:6ly79qxejks" />
-  <input type="text" name="q" size="25" />
-  <input type="submit" name="sa" value="Search" />
-  </p>
-</form>
-<!-- <script type="text/javascript" src="http://www.google.com/coop/cse/brand?fo
-rm=searchbox_009180828701492049973%3A6ly79qxejks&lang=en"></script> -->
-<!-- Google CSE Search Box Ends -->"""
-
-    if not querychannel:
-        print """<h2>Channels</h2>"""
-        print """<p><em>See also <a href="%s">users</a>.</p>""" % (root + "users")
-    else:
-        print """<h2>Daily logs</h2>"""
-
-    print "<table>"
-    print "<thead><tr><th></th>"
+    channeldata = []
     for channel in channels:
         channelID = channel.strip("#").lower()
         channelURI = root + channelID + "#channel"
-        print """<th><a href="%s">#%s</a></th>""" % (channelURI, channel)
-    print "</tr></thead><tbody>"            
-    for day in reversed(sorted(sink.days.keys())):
-        print "<tr>"
-        print "<th>%s</th>" % day
-        for channel in sorted(sink.channels.keys()):
-            print "<td>"
-            if channel in sink.day2channels[day]:
-                print '<a href="/%s/%s">#%s</a>' % (channel, day, channel)
-            print "</td>"
-        print "</tr>"
-    print """</tbody></table>
-<p>Older logs are still at <a href="http://tuukka.iki.fi/tmp/logindex">http://tuukka.iki.fi/tmp/logindex</a>.
-Hopefully they'll be merged here soon.</p>
+        channeldata.append({'uri': channelURI, 'name': channelID})
 
-<p>Rendered by <a href="http://github.com/tuukka/sioclog/blob/master/sioclogwww.py">sioclogwww.py</a>.</p>
-</body>
-</html>"""
+    # XXX list works around a bug in simpletal
+    days = list(reversed(sorted(sink.days.keys())))
+
+    context.addGlobal('channels', channeldata)
+    context.addGlobal('days', days)
+    context.addGlobal('day2channels', sink.day2channels)
+
+    template = get_template('index')
+    expand_template(template, context)
+
+
+if __name__ == '__main__':
+    import sys, logging
+    simpleTALLogger = logging.getLogger("simpleTAL")
+    simpleTALLogger.setLevel(logging.DEBUG)
+    runcgi(sys.argv[1])

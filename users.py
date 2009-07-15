@@ -65,7 +65,7 @@ def link_values(model, subject, property):
         if value is None:
             yield None
         elif value.is_literal():
-            yield html_escape(value.literal_value['string'].encode('utf-8'))
+            yield html_escape(value.literal_value['string'])
         elif value.is_resource():
             yield """<a href="%s">%s</a>""" % html_escapes(value.uri, value.uri)
 
@@ -142,86 +142,42 @@ def render_user(format, datarooturi, nick, datauri):
 
     person = find_person(nick)
 
+    error = None
+
     model = Red.Model()
     # XXX work around a bug in Redland?
     if person:
         try:
             model.load(person.rsplit('#', 1)[0], name='guess')
         except:
-            if format == "html":
-                print """Error loading the FOAF info: %s""" % html_escape(sys.exc_info()[1])
+            error = "Error loading the FOAF info: %s" % sys.exc_info()[1]
  
     if format == "html":
-        print """<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE html 
-     PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
-<head>
-<title>%s</title>
-<link rel="meta" href="http://triplr.org/rdf/%s" type="application/rdf+xml" title="SIOC"/>
-<style type="text/css"><!--
-div.logo-bar {
-    float: right;
-    text-align: center;
+        context = new_context()
+        context.addGlobal('datarooturi', datarooturi)
+        context.addGlobal('datauri', datauri)
+        context.addGlobal('error', error)
 
-//    background: #CCCCFF;
-
-    border-style: solid;
-    border-color: #9999CC;
-    border-width: 2px;
-}
-th {
-    text-align: left;
-}
-th, td { 
-    vertical-align: top;
-}
-img {
-    border: none;
-    margin: 1em;
-}
---></style>
-</head>
-<body>""" % html_escapes("User %s" % nick, datauri)
-
-        print """<h1>User %s</h1>""" % html_escape(nick)
-        print """<p>Available formats: <a href="%s">content-negotiated</a> <a href="%s.html">html</a> <a href="%s.turtle">turtle</a> (see <a href="http://sioc-project.org">SIOC</a> for the vocabulary) </p>""" % html_escapes(datauri, datauri, datauri)
-        print """
-<table><tr><td>
-<img src="http://irc.sioc-project.org/images/foaf.png" align="left" />
-</td><td>"""
+        info = []
         if person:
-            print """
-<p>The person holding this user account has the Web ID (FOAF) of <br />
-<tt><a href="%s">%s</a></tt>.
-</p>
-</td></tr></table>
-""" % html_escapes(person, person)
-            print "<table>"
             for name in link_values(model, person, [FOAF.name, FOAF.firstName, FOAF.nick, RDFS.label]):
-                print "<tr><th>Name</th><td>%s</td></tr>" % name
+                info.append({'key': 'Name', 'value': "%s" % name})
             for website in link_values(model, person, [FOAF.homepage]):
-                print "<tr><th>Website</th><td>%s</td></tr>" % website
+                info.append({'key': 'Website', 'value': "%s" % website})
             for weblog in link_values(model, person, [FOAF.weblog]):
-                print "<tr><th>Weblog</th><td>%s</td></tr>" % weblog
+                info.append({'key': 'Weblog', 'value': "%s" % weblog})
             for img in image_values(model, person, [FOAF.depiction, FOAF.img]):
-                print "<tr><th>Image</th><td>%s</td></tr>" % img
+                info.append({'key': 'Image', 'value': "%s" % img})
             for known in friend_values(model, person, [FOAF.knows]):
-                print "<tr><th>Knows</th><td>%s</td></tr>" % known
-            print "</table>"
-        else:
-            print """
-<p>Nothing known about this person, because no Web ID (FOAF) known for this 
-user. <em>If you are this person, please join channel #swig or #mttlbot-testing, and tell 
-<a href="http://buzzword.org.uk/2009/mttlbot/#bot">mttlbot</a> your Web ID.</em></p>
-</td></tr></table>"""
-        print """
-<p>Back to user index: <a href="/users">content-negotiated</a> <a href="/users.html">html</a> <a href="/users.turtle">turtle</a></p>
+                info.append({'key': 'Knows', 'value': "%s" % known})
 
-<p>Rendered by <a href="http://github.com/tuukka/sioclog">sioclog</a>.</p>
-</body>
-</html>"""
+        context.addGlobal('here', {'nick': nick,
+                                   'person': {'webid': person,
+                                              'info': info}})
+
+        template = get_template('user')
+        expand_template(template, context)
+
     elif format == "turtle":
         userURI = "http://irc.sioc-project.org/users/%s#user" % nick
         oldUserURI = "irc://freenode/%s,isuser" % nick

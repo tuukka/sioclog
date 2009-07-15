@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en"
+      xmlns:tal="http://xml.zope.org/namespaces/tal">
+<!-- This is a template file that is expanded using SimpleTAL. -->
+<!-- The tal: names direct the expansion. -->
+<head>
+<meta http-equiv="Content-type" content="text/html; charset=UTF-8" />
+<title tal:content="title">exampleTitle</title>
+<link tal:attributes="href string:http://triplr.org/rdf/${datauri}" 
+      rel="meta" type="application/rdf+xml" title="SIOC"
+      href="http://triplr.org/rdf/http://example.org/exampleData" />
+<style type="text/css"><!--
+td {
+    vertical-align: top;
+}
+
+td > a:target {
+    background-color: lightblue;
+}
+--></style>
+</head>
+<body>
+
+<h1>Discussion log for channel 
+<a tal:attributes="href channel/uri"
+   tal:content="string:#${channel/name}"
+   href="http://example.org/exampleChannel">#exampleChannel</a>
+on <span tal:content="timeprefix">0000-00-00</span></h1>
+
+<p>Available formats: 
+<a tal:attributes="href string:${datauri}"
+   href="http://example.org/exampleData">content-negotiated</a> 
+<a tal:attributes="href string:${datauri}.html"
+   href="http://example.org/exampleData.html">html</a> 
+<a tal:attributes="href string:${datauri}.turtle"
+   href="http://example.org/exampleData.turtle">turtle</a> 
+<a tal:attributes="href string:${datauri}.txt"
+   href="http://example.org/exampleData.txt">raw</a> 
+(see <a href="http://sioc-project.org">SIOC</a> for the vocabulary) </p>
+
+<div style="color: 9999CC; background: #CCCCFF; border: 3px dashed; padding: 1em; margin: 1em;">
+<p style="color: black; margin: 0">
+These logs are provided as an experiment in indexing discussions using 
+<a href="http://sioc-project.org">SIOC</a>. 
+</p>
+</div>
+<em>
+Times are in UTC/GMT.
+</em>
+
+<table>
+<tr tal:repeat="event events">
+<td><a tal:attributes="name event/id; href string:#${event/id}"
+       tal:content="event/time"
+       name="00:00:00.0" href="#00:00:00.0">00:00:00</a></td>
+<div tal:condition="event/isAction" tal:omit-tag="">
+  <td> * </td>
+  <td>
+    <a tal:attributes="href event/creator"
+       tal:content="event/nick"
+       href="http://example.org/exampleUser">exampleNick</a>
+    <span tal:content="event/content">
+      does exampleAction.</span>
+  </td>
+</div>
+<div tal:condition="not:event/isAction" tal:omit-tag="">
+  <td>&lt;<a tal:attributes="href event/creator"
+	     tal:content="event/nick"
+	     href="http://example.org/exampleUser">exampleNick</a>&gt;
+  </td>
+  <td tal:content="event/content">exampleContent.</td>
+</div>
+</tr>
+</table>
+<p>Back to channel and daily index: <a href="/index">content-negotiated</a> <a href="/index.html">html</a> <a href="/index.turtle">turtle</a></p>
+
+<p>Rendered by <a href="http://github.com/tuukka/sioclog">sioclog</a>.</p>
+</body>
+</html>

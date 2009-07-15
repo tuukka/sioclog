@@ -7,7 +7,7 @@ XXX
 """
 
 def escape_html(s):
-    s = str(s)
+    s = "%s" % s
     # & needs to be escaped first, before more are introduced:
     s = s.replace('&', '&amp;')
     s = s.replace('<', '&lt;')

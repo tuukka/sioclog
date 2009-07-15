@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en"
+      xmlns:tal="http://xml.zope.org/namespaces/tal">
+<!-- This is a template file that is expanded using SimpleTAL. -->
+<!-- The tal: names direct the expansion. -->
+<head>
+<meta http-equiv="Content-type" content="text/html; charset=UTF-8" />
+<title tal:content="title">exampleTitle</title>
+<link tal:attributes="href string:http://triplr.org/rdf/${datauri}" 
+      rel="meta" type="application/rdf+xml" title="SIOC"
+      href="http://triplr.org/rdf/http://example.org/exampleData" />
+<style type="text/css"><!--
+div.logo-bar {
+    float: right;
+    text-align: center;
+
+//    background: #CCCCFF;
+
+    border-style: solid;
+    border-color: #9999CC;
+    border-width: 2px;
+}
+td { 
+    vertical-align: top;
+}
+img {
+    border: none;
+    margin: 1em;
+}
+--></style>
+</head>
+<body>
+<h1 tal:content="title">exampleTitle</h1>
+<p>Available formats: 
+<a tal:attributes="href string:${datauri}"
+   href="http://example.org/exampleData">content-negotiated</a> 
+<a tal:attributes="href string:${datauri2}.html"
+   href="http://example.org/exampleData.html">html</a> 
+<a tal:attributes="href string:${datauri2}.turtle"
+   href="http://example.org/exampleData.turtle">turtle</a> 
+(see <a href="http://sioc-project.org">SIOC</a> for the vocabulary) </p>
+
+<p tal:condition="querychannel">
+This is a discussion channel on the Freenode IRC network.
+</p>
+
+<div tal:condition="not:querychannel" class="logo-bar">
+<a href="http://fenfire.org/"><img src="http://fenfire.org/logo.png" 
+alt="Fenfire" title="The Fenfire project" /></a>
+<br />
+<a href="http://sioc-project.org/"><img src="http://sioc-project.org/files/sioc_button.gif" 
+alt="SIOC" title="Semantically-Interlinked Online Communities" /></a>
+<br />
+<a href="http://linkeddata.org/"><img src="http://irc.sioc-project.org/images/linkingopendata.png"
+width="100" alt="Linked Data" title="Linked Data" /></a>
+<br />
+<a href="http://www.w3.org/RDF/"><img src="http://www.w3.org/RDF/icons/rdf_w3c_icon.96"
+alt="RDF" title="RDF Resource Description Framework" /></a>
+</div>
+
+<p tal:condition="not:querychannel">
+The URIs of unspecified format are content-negotiated and can thus be 
+opened equally well in web browsers and in RDF browsers such 
+as <a href="http://fenfire.org/">Fenfire</a>. The RDF data uses the 
+SIOC vocabulary (see the <a href="http://sioc-project.org/">
+Semantically-Interlinked Online Communities Project</a> for details).
+</p>
+
+<p><strong>Privacy notice:</strong> In line with Freenode policy, it is 
+possible to exclude your lines from these logs. Based on a common convention, 
+you can achieve this by prepending <code>[off]</code> to your messages and 
+actions.
+</p>
+<!-- Google CSE Search Box Begins  -->
+<form action="http://www.google.com/cse" id="searchbox_009180828701492049973:6ly
+79qxejks">
+  <p>
+  <input type="hidden" name="cx" value="009180828701492049973:6ly79qxejks" />
+  <input type="text" name="q" size="25" />
+  <input type="submit" name="sa" value="Search" />
+  </p>
+</form>
+<!-- <script type="text/javascript" src="http://www.google.com/coop/cse/brand?fo
+rm=searchbox_009180828701492049973%3A6ly79qxejks&lang=en"></script> -->
+<!-- Google CSE Search Box Ends -->
+
+<h2 tal:condition="querychannel">Daily logs</h2>
+
+<h2 tal:condition="not:querychannel">Channels</h2>
+<p tal:condition="not:querychannel">
+<em>See also <a href="http://irc.sioc-project.org/users">users</a>.</em>
+</p>
+
+<table>
+<thead><tr><th></th>
+<th tal:repeat="channel channels">
+<a tal:attributes="href channel/uri" tal:content="string:#${channel/name}"
+   href="http://example.org/exampleChannel">#exampleChannel</a>
+</th>
+</tr></thead><tbody>
+<tr tal:repeat="day days">
+<th tal:content="day">0000-00-00</th>
+<td tal:repeat="channel channels">
+<a tal:define="channelname channel/name"
+   tal:condition="day2channels/?day/?channelname"
+   tal:attributes="href string:${datarooturi}${channel/name}/${day}"
+   tal:content="string:#${channel/name}"
+   href="http://example.org/exampleChannel/0000-00-00">#exampleChannel</a>
+</td>
+</tr>
+</tbody></table>
+
+<p>Older logs are still at <a href="http://tuukka.iki.fi/tmp/logindex">http://tuukka.iki.fi/tmp/logindex</a>.
+Hopefully they'll be merged here soon.</p>
+
+<p>Rendered by <a href="http://github.com/tuukka/sioclog">sioclog</a>.</p>
+</body>
+</html>
