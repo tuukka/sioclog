@@ -265,7 +265,7 @@ class HtmlSink(IrcSink):
         self.events.append({'id': id, 'time': time, 
                             'isAction': action,
                             'creator': creator, 'nick': nick, 
-                            'content': content})
+                            'content': content.decode("utf-8")})
 
     handleReceivedFallback = lambda self,x:None
 
