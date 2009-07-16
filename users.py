@@ -103,11 +103,12 @@ def get_triples(model, subject, properties):
             elif value.is_literal():
                 yield (subject, property, PlainLiteral(value.literal_value['string']))
 
-def render_user_index(format, datarooturi, datauri):
+def render_user_index(format, crumbs, datarooturi, datauri):
     freenodeURI = datarooturi + "#freenode"
     nicks = get_nicks()
     if format == "html":
         context = new_context()
+        context.addGlobal('crumbs', crumbs)
         context.addGlobal('datarooturi', datarooturi)
         context.addGlobal('datauri', datauri)
 
@@ -136,7 +137,7 @@ def render_user_index(format, datarooturi, datauri):
         writer.write(triples)
         writer.close()
 
-def render_user(format, datarooturi, nick, datauri):
+def render_user(format, crumbs, datarooturi, nick, datauri):
     global Red
     import RDF as Red
 
@@ -154,6 +155,7 @@ def render_user(format, datarooturi, nick, datauri):
  
     if format == "html":
         context = new_context()
+        context.addGlobal('crumbs', crumbs)
         context.addGlobal('datarooturi', datarooturi)
         context.addGlobal('datauri', datauri)
         context.addGlobal('error', error)

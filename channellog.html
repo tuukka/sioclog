@@ -24,23 +24,43 @@
    href="http://example.org/exampleChannel">#exampleChannel</a>
 on <span tal:content="timeprefix">0000-00-00</span></h1>
 
-<p>Available formats: 
-<a tal:attributes="href string:${datauri}"
-   href="http://example.org/exampleData">content-negotiated</a> 
-<a tal:attributes="href string:${datauri}.html"
-   href="http://example.org/exampleData.html">html</a> 
-<a tal:attributes="href string:${datauri}.turtle"
-   href="http://example.org/exampleData.turtle">turtle</a> 
-<a tal:attributes="href string:${datauri}.txt"
-   href="http://example.org/exampleData.txt">raw</a> 
-(see <a href="http://sioc-project.org">SIOC</a> for the vocabulary) </p>
+<div class="crumb-bar">
+<ul>
+<li tal:repeat="crumb crumbs"><a tal:attributes="href crumb/uri" tal:content="crumb/label"
+     href="/example/path">exampleCrumb</a></li>
+</ul>
+</div>
 
+<div class="right-bar">
+
+<div class="format-bar">
+<h3>Available formats</h3> 
+<ul>
+<li><a tal:attributes="href string:${datauri}"
+   href="http://example.org/exampleData">content-negotiated</a></li>
+<li><a tal:attributes="href string:${datauri}.html"
+   href="http://example.org/exampleData.html">html</a></li>
+<li><a tal:attributes="href string:${datauri}.turtle"
+   href="http://example.org/exampleData.turtle">turtle</a> (see <a href="http://sioc-project.org">SIOC</a>)</li>
+<li><a tal:attributes="href string:${datauri}.txt"
+   href="http://example.org/exampleData.txt">raw</a></li>
+</ul>
+</div>
+</div>
+
+<p><strong>Privacy notice:</strong> In line with Freenode policy, it is 
+possible to exclude your lines from these logs. Based on a common convention, 
+you can achieve this by prepending <code>[off]</code> to your messages and 
+actions.
+</p>
+<!--
 <div style="color: 9999CC; background: #CCCCFF; border: 3px dashed; padding: 1em; margin: 1em;">
 <p style="color: black; margin: 0">
 These logs are provided as an experiment in indexing discussions using 
 <a href="http://sioc-project.org">SIOC</a>. 
 </p>
 </div>
+-->
 <em>
 Times are in UTC/GMT.
 </em>
@@ -69,7 +89,13 @@ Times are in UTC/GMT.
 </div>
 </tr>
 </table>
-<p>Back to channel and daily index: <a href="/index">content-negotiated</a> <a href="/index.html">html</a> <a href="/index.turtle">turtle</a></p>
+
+<div class="crumb-bar">
+<ul>
+<li tal:repeat="crumb crumbs"><a tal:attributes="href crumb/uri" tal:content="crumb/label"
+     href="/example/path">exampleCrumb</a></li>
+</ul>
+</div>
 
 <p>Rendered by <a href="http://github.com/tuukka/sioclog">sioclog</a>.</p>
 </body>

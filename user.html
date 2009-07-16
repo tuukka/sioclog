@@ -18,14 +18,28 @@
 </head>
 <body>
 <h1 tal:content="string:User ${here/nick}">User exampleUser</h1>
-<p>Available formats: 
-<a tal:attributes="href string:${datauri}"
-   href="http://example.org/exampleData">content-negotiated</a> 
-<a tal:attributes="href string:${datauri}.html"
-   href="http://example.org/exampleData.html">html</a> 
-<a tal:attributes="href string:${datauri}.turtle"
-   href="http://example.org/exampleData.turtle">turtle</a> 
-(see <a href="http://sioc-project.org">SIOC</a> for the vocabulary) </p>
+
+<div class="crumb-bar">
+<ul>
+<li tal:repeat="crumb crumbs"><a tal:attributes="href crumb/uri" tal:content="crumb/label"
+     href="/example/path">exampleCrumb</a></li>
+</ul>
+</div>
+
+<div class="right-bar">
+
+<div class="format-bar">
+<h3>Available formats</h3> 
+<ul>
+<li><a tal:attributes="href string:${datauri}"
+   href="http://example.org/exampleData">content-negotiated</a></li>
+<li><a tal:attributes="href string:${datauri}.html"
+   href="http://example.org/exampleData.html">html</a></li>
+<li><a tal:attributes="href string:${datauri}.turtle"
+   href="http://example.org/exampleData.turtle">turtle</a> (see <a href="http://sioc-project.org">SIOC</a>)</li>
+</ul>
+</div>
+</div>
 
 <table><tr><td>
 <img src="http://irc.sioc-project.org/images/foaf.png" align="left" />
@@ -57,7 +71,12 @@ Example error message.
 </tr>
 </table>
 
-<p>Back to user index: <a href="/users">content-negotiated</a> <a href="/users.html">html</a> <a href="/users.turtle">turtle</a></p>
+<div class="crumb-bar">
+<ul>
+<li tal:repeat="crumb crumbs"><a tal:attributes="href crumb/uri" tal:content="crumb/label"
+     href="/example/path">exampleCrumb</a></li>
+</ul>
+</div>
 
 <p>Rendered by <a href="http://github.com/tuukka/sioclog">sioclog</a>.</p>
 </body>

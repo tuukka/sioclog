@@ -87,6 +87,9 @@ def runcgi(logfile):
     # FIXME can't infer this from CGI info?
     datarooturi = "http://irc.sioc-project.org/"
 
+    crumbs = list(create_index_crumbs(datarooturi, datauri, restype, channel, 
+                                      timeprefix))
+
     if format == "html":
         print "Content-type: text/html; charset=utf-8"
         print
@@ -98,14 +101,14 @@ def runcgi(logfile):
         print
 
     if restype == "users" and channel:
-        render_user(format, datarooturi, channel, datauri)
+        render_user(format, crumbs, datarooturi, channel, datauri)
     elif restype == "users":
         # show user index
-        render_user_index(format, datarooturi, datauri)
+        render_user_index(format, crumbs, datarooturi, datauri)
     elif channel and timeprefix:
         # show log
         if format == "html":
-            sink = HtmlSink(datarooturi, channel, timeprefix, datauri)
+            sink = HtmlSink(crumbs, datarooturi, channel, timeprefix, datauri)
         elif format == "turtle":
             sink = TurtleSink(datarooturi, channel, timeprefix)
         elif format == "raw":
@@ -133,7 +136,7 @@ def runcgi(logfile):
         run(file(logfile), pipeline)
 
         if format == "html":
-            html_index(sink, datarooturi, datauri, channel)
+            html_index(sink, crumbs, datarooturi, datauri, channel)
         elif format == "turtle":
             turtle_index(sink, datarooturi, datauri, channel)
         # XXX more formats
@@ -184,10 +187,37 @@ def turtle_index(sink, root, datauri, querychannel):
     writer.write(triples)
     writer.close()
 
-def html_index(sink, root, datauri, querychannel):
+def hash(**kwargs):
+    return kwargs
+
+def create_index_crumbs(root, datauri, restype, channel, timeprefix):
+    yield hash(uri=root, label="Front page")
+
+    if datauri == root:
+        return
+        
+    if not restype:
+        return
+
+    yield hash(uri="%s%s" % (root, restype), label=restype)
+
+    if not channel:
+        return
+
+    yield hash(uri="%s%s/%s" % (root, restype, channel), label=channel)
+
+    if not timeprefix:
+        return
+
+    yield hash(uri="%s%s/%s/%s" % (root, restype, channel, timeprefix),
+               label=timeprefix)
+
+def html_index(sink, crumbs, root, datauri, querychannel):
     context = new_context()
+    context.addGlobal('crumbs', crumbs)
     context.addGlobal('datarooturi', root)
     context.addGlobal('datauri', datauri)
+
     context.addGlobal('querychannel', querychannel)
 
     channels = sorted(sink.channels.keys())

@@ -18,14 +18,28 @@
 </head>
 <body>
 <h1>Some IRC users</h1>
-<p>Available formats: 
-<a tal:attributes="href string:${datauri}"
-   href="http://example.org/exampleData">content-negotiated</a> 
-<a tal:attributes="href string:${datauri}.html"
-   href="http://example.org/exampleData.html">html</a> 
-<a tal:attributes="href string:${datauri}.turtle"
-   href="http://example.org/exampleData.turtle">turtle</a> 
-(see <a href="http://sioc-project.org">SIOC</a> for the vocabulary) </p>
+
+<div class="crumb-bar">
+<ul>
+<li tal:repeat="crumb crumbs"><a tal:attributes="href crumb/uri" tal:content="crumb/label"
+     href="/example/path">exampleCrumb</a></li>
+</ul>
+</div>
+
+<div class="right-bar">
+
+<div class="format-bar">
+<h3>Available formats</h3> 
+<ul>
+<li><a tal:attributes="href string:${datauri}"
+   href="http://example.org/exampleData">content-negotiated</a></li>
+<li><a tal:attributes="href string:${datauri}.html"
+   href="http://example.org/exampleData.html">html</a></li>
+<li><a tal:attributes="href string:${datauri}.turtle"
+   href="http://example.org/exampleData.turtle">turtle</a> (see <a href="http://sioc-project.org">SIOC</a>)</li>
+</ul>
+</div>
+</div>
 
 <p>This list contains those users of Freenode IRC whose Web ID is known. 
 <em>If you'd like to 
@@ -39,6 +53,13 @@ participate, please join channel #swig or #mttlbot-testing, and tell
    href="http://example.org/exampleUser">exampleNick</a>
 </li>
 </ul>
+
+<div class="crumb-bar">
+<ul>
+<li tal:repeat="crumb crumbs"><a tal:attributes="href crumb/uri" tal:content="crumb/label"
+     href="/example/path">exampleCrumb</a></li>
+</ul>
+</div>
 
 <p>Rendered by <a href="http://github.com/tuukka/sioclog">sioclog</a>.</p>
 <p>

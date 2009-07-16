@@ -243,9 +243,10 @@ class OffFilter(IrcFilter):
 
 class HtmlSink(IrcSink):
     """A sink that renders the lines it receives as a HTML table"""
-    def __init__(self, root, channel, timeprefix, selfuri):
+    def __init__(self, crumbs, root, channel, timeprefix, selfuri):
         IrcSink.__init__(self)
 
+        self.crumbs = crumbs
         self.root = root
         self.channel = channel
         self.timeprefix = timeprefix
@@ -271,6 +272,7 @@ class HtmlSink(IrcSink):
 
     def close(self):
         context = new_context()
+        context.addGlobal('crumbs', self.crumbs)
         context.addGlobal('datarooturi', self.root)
         context.addGlobal('datauri', self.datauri)
 
