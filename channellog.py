@@ -8,7 +8,7 @@ pipeline = ChannelFilter("#sioc", RawSink())
 run(file("sioc.log"), pipeline)
 """
 
-import re, datetime
+import sys, re, datetime
 
 from traceback import print_exc
 
@@ -410,7 +410,7 @@ class ChannelsAndDaysSink(IrcSink):
 def run(inputstream, pipeline):
     """Processes each line from the input in the pipeline and closes it"""
     pipeline = AddRegisteredFilter(AddZTimeFilter(pipeline))
-    for l in inputstream:
+    for i, l in enumerate(inputstream):
         #print l
         time, linestr = l[:-1].split(" ",1)
         try:
@@ -418,6 +418,7 @@ def run(inputstream, pipeline):
             pipeline.handleReceived(Line(linestr=linestr, time=time))
         except:
             print_exc()
+            print >>sys.stderr, "... on line %s: %s" % (i+1, l)
 
     pipeline.close()
 
