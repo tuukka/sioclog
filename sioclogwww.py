@@ -14,6 +14,7 @@ from templating import new_context, get_template, expand_template
 from turtle import PlainLiteral, TypedLiteral, TurtleWriter
 from vocabulary import namespaces, RDF, RDFS, OWL, DC, DCTERMS, XSD, FOAF, SIOC, SIOCT, DS
 from users import render_user, render_user_index
+from styles import css_stylesheet
 
 def runcgi(logfile):
     HTTP_HOST = os.environ.get('HTTP_HOST', "")
@@ -25,6 +26,12 @@ def runcgi(logfile):
 #    query = cgi.FieldStorage()
 #    channel = query.getfirst("channel", "")
 #    timeprefix = query.getfirst("time", "")
+
+    if PATH_INFO == "/styles.css":
+        print "Content-type: text/css"
+        print
+        css_stylesheet()
+        return
 
     if REQUEST_URI.endswith(".html"):
         extension = ".html"

@@ -9,31 +9,12 @@
 <head>
 <meta http-equiv="Content-type" content="text/html; charset=UTF-8" />
 <title tal:content="string:User ${here/nick}">User exampleUser</title>
+<link tal:attributes="href string:${datarooturi}styles.css"
+      rel="stylesheet" type="text/css" title="Styles" 
+      href="styles.css" />
 <link tal:attributes="href string:http://triplr.org/rdf/${datauri}" 
       rel="meta" type="application/rdf+xml" title="SIOC"
       href="http://triplr.org/rdf/http://example.org/exampleData" />
-<style type="text/css"><!--
-div.logo-bar {
-    float: right;
-    text-align: center;
-
-//    background: #CCCCFF;
-
-    border-style: solid;
-    border-color: #9999CC;
-    border-width: 2px;
-}
-th {
-    text-align: left;
-}
-th, td { 
-    vertical-align: top;
-}
-img {
-    border: none;
-    margin: 1em;
-}
---></style>
 </head>
 <body>
 <h1 tal:content="string:User ${here/nick}">User exampleUser</h1>

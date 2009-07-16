@@ -26,7 +26,7 @@ body {
     border-width: 2px;
     padding: 0em;
 //    float: right;
-    margin: 0 0 1em 0;
+    margin: 0 0 1.5em 0;
 }
 
 .format-bar h3 {
@@ -53,6 +53,7 @@ body {
 
 .crumb-bar {
     padding: 0.5em;
+    margin-bottom: 1.5em;
 }
 
 .crumb-bar ul, .crumb-bar li {
@@ -93,8 +94,16 @@ body {
     background: #ccccff;
 }
 
-td { 
+th {
+    text-align: left;
+}
+
+th, td { 
     vertical-align: top;
+}
+
+td > a:target {
+    background-color: lightblue;
 }
 
 img {
