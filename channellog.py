@@ -128,6 +128,17 @@ class ChannelFilter(IrcFilter):
     def irc_RPL_WELCOME(self, line):
         self.nick = line.args[0]
 
+        # reset state from previous connects:
+
+        self.channels = []
+        self.away = False
+        self.awaymsg = None
+
+        self.namreply = {}
+
+        self.nick2channels = {}
+        self.channel2nicks = {}
+
     def irc_NICK(self, line):
         # we get messages about other clients as well
         if self.isme(line.prefix):
