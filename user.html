@@ -46,18 +46,15 @@
 </td><td>
 
 <p tal:condition="here/person/webid">
-The person holding this user account has the Web ID (FOAF) of <br />
+The person holding this user account claims to have the Web ID (FOAF) of <br />
 <tt><a tal:attributes="href here/person/webid" 
        tal:content="here/person/webid"
        href="http://example.org/webid">
 http://example.org/webid</a></tt>.
 </p>
 <p tal:condition="not:here/person/webid">
-Nothing known about this person, because no Web ID (FOAF) known for this user.
-<em>If you are this person, please join channel #swig or #mttlbot-testing, 
-and tell 
-<a href="http://buzzword.org.uk/2009/mttlbot/#bot">mttlbot</a>
-your Web ID.</em>
+Nothing known about the person behind this user account, because no Web ID (FOAF) known for this user.
+<strong>If you are this user, you can use the IRC command <code>/msg nickserv set property webid <em>your-WebID-here</em></code> to claim your Web ID.</strong>
 </p>
 
 </td></tr></table>

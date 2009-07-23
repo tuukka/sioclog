@@ -7,6 +7,7 @@ XXX
 """
 
 import sys
+from traceback import print_exc
 
 from turtle import PlainLiteral, TypedLiteral, TurtleWriter
 from vocabulary import namespaces, RDF, RDFS, OWL, FOAF, SIOC
@@ -40,6 +41,21 @@ def get_nicks():
     return sorted(get_nick2people())
 
 def find_person(nick):
+    try:
+        global Red
+        import RDF as Red
+        m = Red.Model()
+        # XXX name='guess' fails as twisted sends Content-type, not Content-Type
+        m.load("http://localhost:3456/%s" % nick, name='turtle')
+        for t in m.find_statements(Red.Statement(None, Red.Uri(FOAF.holdsAccount), Red.Uri("irc://freenode/%s,isnick" % nick))):
+            return str(t.subject.uri)
+    except:
+        print_exc()
+    else:
+        print >>sys.stderr, "No webid for %s from taxonomybot" % nick
+
+    print >>sys.stderr, "Falling back to get_nick2people()"
+
     nick2people = get_nick2people()
     return nick2people.get(nick, None)
 
