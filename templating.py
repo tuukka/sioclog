@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-"""templating.py - a module for rendering html with templates
+"""templating.py - a module for rendering HTML with templates
 
 Example usage:
 from templating import new_context, get_template, expand_template

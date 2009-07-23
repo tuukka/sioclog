@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-"""taxonomybot.py - an IRC bot that bridges taxonomy queries to HTTP
+"""taxonomybot.py - a helper IRC bot that relays user metadata via HTTP
 
 Requires Twisted Python
 

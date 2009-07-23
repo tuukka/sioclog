@@ -1,5 +1,16 @@
 
-sioclog is a system for logging and displaying activity on IRC channels.
+SiocLog is a system for logging and displaying activity on IRC channels.
+
+http://irc.sioc-project.org/
+
+Dependencies
+------------
+
+SiocLog uses Python 2.5 (for with-statements) and the following libraries:
+
+* python-twisted: Twisted Python is the IO framework used for IRC
+* python-simpletal: SimpleTAL is the XML templating system used for HTML
+* python-librdf: Redland RDF is used to load Linked Data from the Web
 
 Installation
 ------------
@@ -8,13 +19,31 @@ Installation
 1. Copy sioclog.cgi to a place where a HTTP server is configured to execute it.
 2. Edit sioclog.cgi to match the location of the rest of the files.
 3. Start sioclogbot.py in background - probably using the screen command.
+4. Start taxonomybot.py in background - probably using the screen command.
 
-Parts
------
+Main parts
+----------
 
 sioclogbot.py - an IRC bot that logs what it sees into a log file
 sioclogwww.py - a WWW interface for displaying logs
 sioclog.cgi - a CGI script for running the WWW interface on a HTTP server
+taxonomybot.py - a helper IRC bot that relays user metadata via HTTP
+
+Helpers
+-------
+
+index.html - a template for the front page and the log indexes
+channellog.html - a template for the logs
+users.html - a template for the user index
+user.html - a template for the user profile pages
 
 ircbase.py - a module for dealing with IRC connections and data
 channellog.py - a module for filtering and rendering streams of IRC data
+users.py - a module for dealing with users: index, Web IDs, FOAF data
+
+htmlutil.py - a small module for dealing with HTML
+templating.py - a small module for rendering HTML with templates
+styles.py - a small module for rendering the CSS stylesheets
+
+turtle.py - a small module for rendering RDF data in the Turtle format
+vocabulary.py - a small module for the RDF vocabularies used

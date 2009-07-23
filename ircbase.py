@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 
 """ircbase.py - a module for dealing with IRC connections and data
 

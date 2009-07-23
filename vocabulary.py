@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-"""vocabulary.py - a module for RDF vocabularies
+"""vocabulary.py - a module for the RDF vocabularies used
 
 Example usage:
 from vocabulary import namespaces, RDF, RDFS, OWL, DC, DCTERMS, XSD, SIOC, DS

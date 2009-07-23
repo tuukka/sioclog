@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-"""styles.py - a module for rendering css stylesheets
+"""styles.py - a module for rendering the CSS stylesheets
 
 Example usage:
 from styles import css_stylesheet

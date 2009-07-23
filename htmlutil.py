@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 
-"""htmlutil.py - a module for dealing with html data
+"""htmlutil.py - a module for dealing with HTML
 
 Example usage: 
-XXX
+from htmlutil import html_escape, html_escapes
+print '<a href="%s">%s</a>' % html_escapes(uri, label)
 """
 
-def escape_html(s):
+def html_escape(s):
     s = "%s" % s
     # & needs to be escaped first, before more are introduced:
     s = s.replace('&', '&amp;')
@@ -15,5 +16,5 @@ def escape_html(s):
     s = s.replace('"', '&quot;')
     return s
 
-def escape_htmls(*args):
-    return tuple(map(escape_html, args))
+def html_escapes(*args):
+    return tuple(map(html_escape, args))

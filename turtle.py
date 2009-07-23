@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-"""turtle.py - a module for RDF data in the Turtle syntax
+"""turtle.py - a module for rendering RDF data in the Turtle format
 
 Example usage:
 from turtle import PlainLiteral, TypedLiteral, TurtleWriter

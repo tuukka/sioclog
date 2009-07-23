@@ -7,13 +7,20 @@ Previous services
 
  * SIOC logging: http://tuukka.iki.fi/irclogs
  * FOAF logging: http://chatlogs.planetrdf.com/swig/
- * Huge logging: http://searchirc.com/
+ * Old logging: http://www.irclog.org/
+ * Huge logging: http://www.irseek.com/
+ * Huge index of channels: http://searchirc.com/
 
 Software:
  * SIOC: screen, irchub, timestamplog, irc2rdf, logindex.cgi, irc-sioc.cgi
  * FOAF: loggerbot
  * lorebot links registered users to FOAF: http://crschmidt.net/semweb/rdfbot/
  * chump bot keeps a scratchpad: http://swig.xmlhack.com/
+ * Julie/Redlandbot
+ * wh4
+ * FOAFbot
+ * mttlbot
+  * http://buzzword.org.uk/2009/mttlbot/graph.cgi?uri=http://buzzword.org.uk/2009/mttlbot/graphs/knowledge
 
 Technologies:
  * Twisted Python: the basis for SIOC logging, chump bot
@@ -33,9 +40,13 @@ Existing:
  * Support all typical IRC features (ACTION, QUIT)
 
 New:
+ * Easy to hack on
  * Vocabulary and URI schemes that everyone is happy with
   * Model actions, joins and parts in SIOC
   * Track nickserv registrations
+  * Linked Data with all-http URIs 
+  * User and channel profile pages
+  * User <-> Web ID links
  * Nice UI
  * Complete content negotiation of HTML, RDF-XML and Turtle
 

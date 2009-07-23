@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 
-"""users.py - a module for dealing with users
+"""users.py - a module for dealing with users: index, Web IDs, FOAF data
 
 Example usage: 
-XXX
+from users import render_user, render_user_index
+render_user(format, crumbs, datarooturi, nick, datauri)
 """
 
 import sys
@@ -13,7 +14,7 @@ from turtle import PlainLiteral, TypedLiteral, TurtleWriter
 from vocabulary import namespaces, RDF, RDFS, OWL, FOAF, SIOC
 
 from templating import new_context, get_template, expand_template
-from htmlutil import escape_html as html_escape, escape_htmls as html_escapes
+from htmlutil import html_escape, html_escapes
 
 mttlbot_knowledge = None
 
@@ -232,11 +233,11 @@ if __name__ == '__main__':
 #    for t in model.find_statements(RDF.Statement(RDF.Uri(person), None, None)):
 #        print t.predicate, t.object
 
-    for name in link_values(person, [FOAF.name]):
+    for name in link_values(model, person, [FOAF.name]):
         print "Name: %s" % name
-    for website in link_values(person, [FOAF.homepage]):
+    for website in link_values(model, person, [FOAF.homepage]):
         print "Website: %s" % website
-    for weblog in link_values(person, [FOAF.weblog]):
+    for weblog in link_values(model, person, [FOAF.weblog]):
         print "Weblog: %s" % weblog
-    for img in image_values(person, [FOAF.img]):
+    for img in image_values(model, [FOAF.img]):
         print "Image: %s" % img

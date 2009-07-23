@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: iso-8859-1 -*-
 
 """sioclogbot.py - an IRC bot that logs what it sees into a log file
 
