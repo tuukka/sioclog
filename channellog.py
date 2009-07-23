@@ -237,8 +237,9 @@ class OffFilter(IrcFilter):
 
         # XXX need to remove leading + or - from content?
         if content.startswith("[off]") or content.startswith("\1ACTION [off]"):
-            return # hide off-record statements
+            return True # hide off-record statements
 
+    def handleReceivedFallback(self, line):
         self.sink.handleReceived(line)
 
 class HtmlSink(IrcSink):
