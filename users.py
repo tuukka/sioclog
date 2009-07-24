@@ -10,6 +10,8 @@ render_user(format, crumbs, datarooturi, nick, datauri)
 import sys
 from traceback import print_exc
 
+from channellog import TaxonomySink, run
+
 from turtle import PlainLiteral, TypedLiteral, TurtleWriter
 from vocabulary import namespaces, RDF, RDFS, OWL, FOAF, SIOC
 
@@ -17,6 +19,8 @@ from templating import new_context, get_template, expand_template
 from htmlutil import html_escape, html_escapes
 
 mttlbot_knowledge = None
+
+taxbot_knowledge = None
 
 def get_mttlbot_knowledge():
     global mttlbot_knowledge
@@ -29,6 +33,21 @@ def get_mttlbot_knowledge():
     m.load("http://buzzword.org.uk/2009/mttlbot/graphs/knowledge", 
            name='guess')
     return m
+#   raptor_set_feature(rdf_parser, RAPTOR_FEATURE_WWW_TIMEOUT , 5);
+
+def get_taxbot_knowledge():
+    global taxbot_knowledge
+    if taxbot_knowledge is not None:
+        return taxbot_knowledge
+
+    sink = TaxonomySink()
+    try:
+        run(file("/home/sioclog/taxonomy.log"), sink)
+    except:
+        print_exc()
+
+    taxbot_knowledge = sink.taxonomy
+    return taxbot_knowledge
 
 def get_nick2people():
     m = get_mttlbot_knowledge()
@@ -36,6 +55,13 @@ def get_nick2people():
     for t in m.find_statements(Red.Statement(None, Red.Uri(FOAF.holdsAccount), None)):
         nick = str(t.object.uri).rsplit(",", 1)[0][len("irc://192.168.100.27/"):]
         nick2people[nick] = str(t.subject.uri)
+
+    triples = [t for t in get_taxbot_knowledge().values() if t]
+    for triples in triples:
+        for s,p,o in triples:
+            if p == "webid":
+                nick2people[s] = o
+
     return nick2people
 
 def get_nicks():
@@ -52,10 +78,10 @@ def find_person(nick):
             return str(t.subject.uri)
     except:
         print_exc()
-    else:
-        print >>sys.stderr, "No webid for %s from taxonomybot" % nick
-
-    print >>sys.stderr, "Falling back to get_nick2people()"
+#    else:
+#        print >>sys.stderr, "No webid for %s from taxonomybot" % nick
+#
+#    print >>sys.stderr, "Falling back to get_nick2people()"
 
     nick2people = get_nick2people()
     return nick2people.get(nick, None)

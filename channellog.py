@@ -75,8 +75,11 @@ class AddRegisteredFilter(IrcFilter):
         else:
             line.registered = None
 
+    irc_NOTICE = irc_PRIVMSG
+
     def handleReceivedFallback(self, line):
         self.sink.handleReceived(line)
+
 
 class ChannelFilter(IrcFilter):
     """A filter that only passes on lines related to a given channel"""
@@ -407,6 +410,37 @@ class ChannelsAndDaysSink(IrcSink):
         self.channel2days.setdefault(channelName, {})[day] = True
 
     handleReceivedFallback = lambda self,x:None
+
+
+class TaxonomySink(IrcSink):
+    """A sink that collects the NickServ taxonomy information it sees"""
+    def __init__(self):
+        IrcSink.__init__(self)
+
+        self.taxonomy_state = None
+        self.taxonomy_response = None
+        self.taxonomy = {}
+
+    def irc_NOTICE(self, line):
+        if line.args[0].startswith("#"):
+            return False
+        if not line.prefix or parseprefix(line.prefix)[0] != "NickServ":
+            return False
+
+        msg = line.args[1]
+        if msg.startswith("Taxonomy for \2"):
+            nick = msg[len("Taxonomy for \2"):-2]
+            self.taxonomy_state = nick
+            self.taxonomy_response = []
+        elif (msg.startswith("End of \2") or 
+              msg.endswith("\2 is not registered.")):
+            self.taxonomy[self.taxonomy_state] = self.taxonomy_response
+            self.taxonomy_state = self.taxonomy_response = None
+        elif self.taxonomy_state:
+            key, rest = msg.split(" ", 1)
+            value = rest.split(":", 1)[1][1:]
+            self.taxonomy_response.append((self.taxonomy_state, key, value))
+
 
 def run(inputstream, pipeline):
     """Processes each line from the input in the pipeline and closes it"""
