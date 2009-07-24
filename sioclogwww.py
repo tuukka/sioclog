@@ -102,10 +102,13 @@ def runcgi(logfile):
         print
 
     if restype == "users" and channel:
-        render_user(format, crumbs, datarooturi, channel, datauri)
+        sink = ChannelsAndDaysSink()
+        run(file(logfile), sink)
+        render_user(sink, format, crumbs, datarooturi, channel, datauri)
     elif restype == "users":
-        # show user index
-        render_user_index(format, crumbs, datarooturi, datauri)
+        sink = ChannelsAndDaysSink()
+        run(file(logfile), sink)
+        render_user_index(sink, format, crumbs, datarooturi, datauri)
     elif channel and timeprefix:
         # show log
         if format == "html":
@@ -178,6 +181,15 @@ def turtle_index(sink, root, datauri, querychannel):
         for day in sorted(sink.channel2days[channel]):
             logURI = "%s%s/%s" % (root, channelID, day)
             triples += [(channelURI, RDFS.seeAlso, logURI)]
+
+    if querychannel:
+        nicks = sorted(sink.channel2nicks[querychannel].keys())
+        for nick in nicks:
+            userURI = root + "users/%s#user" % nick
+            triples += [None,
+                        (channelURI, SIOC.has_subscriber, userURI),
+                        (userURI, RDFS.label, PlainLiteral(nick)),
+                        ]
 
     writer = TurtleWriter(None, namespaces)
     if querychannel and channels:
@@ -257,6 +269,14 @@ def html_index(sink, crumbs, root, datauri, querychannel):
     context.addGlobal('channels', channeldata)
     context.addGlobal('days', days)
     context.addGlobal('day2channels', sink.day2channels)
+
+    if querychannel:
+        nicks = sorted(sink.channel2nicks[querychannel].keys())
+        userdata = []
+        for nick in nicks:
+            userURI = root + "users/%s#user" % nick
+            userdata.append({'uri': userURI, 'name': nick})
+        context.addGlobal('users', userdata)
 
     template = get_template('index')
     expand_template(template, context)

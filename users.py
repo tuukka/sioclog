@@ -146,7 +146,7 @@ def get_triples(model, subject, properties):
             elif value.is_literal():
                 yield (subject, property, PlainLiteral(value.literal_value['string']))
 
-def render_user_index(format, crumbs, datarooturi, datauri):
+def render_user_index(sink, format, crumbs, datarooturi, datauri):
     freenodeURI = datarooturi + "#freenode"
     nicks = get_nicks()
     if format == "html":
@@ -180,7 +180,7 @@ def render_user_index(format, crumbs, datarooturi, datauri):
         writer.write(triples)
         writer.close()
 
-def render_user(format, crumbs, datarooturi, nick, datauri):
+def render_user(sink, format, crumbs, datarooturi, nick, datauri):
     global Red
     import RDF as Red
 
@@ -195,7 +195,9 @@ def render_user(format, crumbs, datarooturi, nick, datauri):
             model.load(person.rsplit('#', 1)[0], name='guess')
         except:
             error = "Error loading the FOAF info: %s" % sys.exc_info()[1]
- 
+
+    channels = sorted(sink.nick2channels.get(nick, {}).keys())
+
     if format == "html":
         context = new_context()
         context.addGlobal('crumbs', crumbs)
@@ -220,6 +222,12 @@ def render_user(format, crumbs, datarooturi, nick, datauri):
                                    'person': {'webid': person,
                                               'info': info}})
 
+        channeldata = []
+        for channel in channels:
+            channelURI = datarooturi + "%s#channel" % channel
+            channeldata.append({'uri': channelURI, 'name': "#"+channel})
+        context.addGlobal('channels', channeldata)
+
         template = get_template('user')
         expand_template(template, context)
 
@@ -235,6 +243,12 @@ def render_user(format, crumbs, datarooturi, nick, datauri):
         if person:
             triples += [None, (person, FOAF.holdsAccount, userURI)]
             triples += get_triples(model, person, [FOAF.name, FOAF.firstName, FOAF.nick, RDFS.label])
+        for channel in channels:
+            channelURI = datarooturi +  "%s#channel" % channel
+            triples += [None, 
+                        (channelURI, SIOC.has_subscriber, userURI),
+                        (channelURI, RDFS.label, PlainLiteral("#%s" % channel)),
+                        ]
         writer = TurtleWriter(None, namespaces)
         title = "About user %s" % nick
         writer.write([("", RDFS.label, PlainLiteral(title)),

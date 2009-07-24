@@ -467,6 +467,9 @@ class ChannelsAndDaysSink(IrcSink):
         self.day2channels = {}
         self.channel2days = {}
 
+        self.nick2channels = {}
+        self.channel2nicks = {}
+
     def irc_PRIVMSG(self, line):
         time = line.ztime
         day = time.split("T")[0]
@@ -480,6 +483,15 @@ class ChannelsAndDaysSink(IrcSink):
         self.channels[channelName] = True
         self.day2channels.setdefault(day, {})[channelName] = True
         self.channel2days.setdefault(channelName, {})[day] = True
+
+        if not line.prefix:
+            return
+
+        nick,_ = parseprefix(line.prefix)
+
+        self.nick2channels.setdefault(nick, {})[channelName] = True
+        self.channel2nicks.setdefault(channelName, {})[nick] = True
+        
 
     handleReceivedFallback = lambda self,x:None
 

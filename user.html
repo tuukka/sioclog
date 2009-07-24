@@ -39,6 +39,16 @@
    href="http://example.org/exampleData.turtle">turtle</a> (see <a href="http://sioc-project.org">SIOC</a>)</li>
 </ul>
 </div>
+
+<div class="format-bar">
+<h3>User channels</h3>
+<ul>
+<li tal:repeat="channel channels">
+  <a tal:attributes="href channel/uri" tal:content="channel/name"></a>
+</li>
+</ul>
+</div>
+
 </div>
 
 <table><tr><td>
