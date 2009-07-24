@@ -48,6 +48,7 @@ class SIOC(object):
     Post         = "http://rdfs.org/sioc/ns#Post"
     User         = "http://rdfs.org/sioc/ns#User"
     space_of     = "http://rdfs.org/sioc/ns#space_of"
+    links_to     = "http://rdfs.org/sioc/ns#links_to"
 
 class SIOCT(object):
     ChatChannel = "http://rdfs.org/sioc/types#ChatChannel"

@@ -19,6 +19,7 @@ from ircbase import parseprefix, Line, Irc
 from templating import new_context, get_template, expand_template
 from turtle import PlainLiteral, TypedLiteral, TurtleWriter
 from vocabulary import namespaces, RDF, RDFS, OWL, DC, DCTERMS, XSD, FOAF, SIOC, SIOCT, DS
+from htmlutil import html_escape, html_unescape
 
 datetimere = r"(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(\.\d+)?"
 timezonere = r"(Z|(\+|-)(\d{2}):(\d{2}))"
@@ -76,6 +77,39 @@ class AddRegisteredFilter(IrcFilter):
             line.registered = None
 
     irc_NOTICE = irc_PRIVMSG
+
+    def handleReceivedFallback(self, line):
+        self.sink.handleReceived(line)
+
+
+link_res = [
+  (r'&lt;(http(s)?://[^ ]*)&gt;',         r'&lt;<a href="\1">\1</a>&gt;'),
+(r'&quot;(http(s)?://[^ ]*)&quot;',     r'&quot;<a href="\1">\1</a>&quot;'),
+    (r'\[(http(s)?://[^ |]*)(\||\])',        r'[<a href="\1">\1</a>\3'),
+(r'(http(s)?://[^ ]*[^ ,.\1])[)](,? |$)',     r'<a href="\1">\1</a>)\3'),
+(r'(http(s)?://[^ ]*[^ ,.\1])',               r'<a href="\1">\1</a>'),
+(r'(^|[ (])(www\.[^ ]*[^ ,.\1])[)](,? |$)', r'\1<a href="http://\2">\2</a>)\3'),
+(r'(^|[ (])(www\.[^ ]*[^ ,.\1])',           r'\1<a href="http://\2">\2</a>'),
+]
+link_res = [(re.compile(link_re), sub) for (link_re, sub) in link_res]
+class AddLinksFilter(IrcFilter):
+    def irc_PRIVMSG(self, line):
+        content = line.args[1]
+        content_html = html_escape(content)
+        links = []
+        for link_re, sub in link_res:
+            content_html_sub = link_re.sub(sub, content_html)
+            if content_html_sub is not content_html:
+                for groups in link_re.findall(content_html):
+                    if groups[1].startswith("www"):
+                        uri = "http://" + groups[1]
+                    else:
+                        uri = groups[0]
+                    links += [html_unescape(uri)]
+                break # XXX later link_res could match other parts of the string
+
+        line.content_html = content_html_sub
+        line.links = links
 
     def handleReceivedFallback(self, line):
         self.sink.handleReceived(line)
@@ -264,7 +298,7 @@ class HtmlSink(IrcSink):
         id = line.ztime.split("T")[1][:-1] # FIXME not unique
         time = id.split(".")[0]
         nick,_acct = parseprefix(line.prefix)
-        content = line.args[1]
+        content = line.content_html #line.args[1]
         creator = self.root + "users/" + nick + "#user"
         action, content = parse_action(content)
         self.events.append({'id': id, 'time': time, 
@@ -356,7 +390,9 @@ class TurtleSink(IrcSink):
                 (event, SIOC.content, PlainLiteral(rawcontent)),
                 (event, RDFS.label, PlainLiteral(label)),
                 (event, RDF.type, SIOC.Post),
-                ]
+                ] + \
+                [(event, SIOC.links_to, uri)
+                 for uri in line.links]
 
     def close(self):
         for nick in self.seenNicks:

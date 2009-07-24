@@ -9,7 +9,7 @@ runcgi("sioclogbot.log")
 
 import cgi, os
 
-from channellog import OffFilter, ChannelFilter, TimeFilter, HtmlSink, TurtleSink, RawSink, ChannelsAndDaysSink, run
+from channellog import OffFilter, ChannelFilter, TimeFilter, HtmlSink, TurtleSink, RawSink, ChannelsAndDaysSink, run, AddLinksFilter
 from templating import new_context, get_template, expand_template
 from turtle import PlainLiteral, TypedLiteral, TurtleWriter
 from vocabulary import namespaces, RDF, RDFS, OWL, DC, DCTERMS, XSD, FOAF, SIOC, SIOCT, DS
@@ -108,9 +108,9 @@ def runcgi(logfile):
     elif channel and timeprefix:
         # show log
         if format == "html":
-            sink = HtmlSink(crumbs, datarooturi, channel, timeprefix, datauri)
+            sink = AddLinksFilter(HtmlSink(crumbs, datarooturi, channel, timeprefix, datauri))
         elif format == "turtle":
-            sink = TurtleSink(datarooturi, channel, timeprefix)
+            sink = AddLinksFilter(TurtleSink(datarooturi, channel, timeprefix))
         elif format == "raw":
             sink = RawSink()
 

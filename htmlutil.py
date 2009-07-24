@@ -18,3 +18,10 @@ def html_escape(s):
 
 def html_escapes(*args):
     return tuple(map(html_escape, args))
+
+def html_unescape(s):
+    s = s.replace("&quot;", '"')
+    s = s.replace("&gt;", '>')
+    s = s.replace("&lt;", '<')
+    s = s.replace("&amp;", '&')
+    return s
