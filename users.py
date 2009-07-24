@@ -149,6 +149,7 @@ def get_triples(model, subject, properties):
 def render_user_index(sink, format, crumbs, datarooturi, datauri):
     freenodeURI = datarooturi + "#freenode"
     nicks = get_nicks()
+    nick2people = get_nick2people()
     if format == "html":
         context = new_context()
         context.addGlobal('crumbs', crumbs)
@@ -169,9 +170,12 @@ def render_user_index(sink, format, crumbs, datarooturi, datauri):
         triples = []
         for nick in nicks:
             user = "http://irc.sioc-project.org/users/%s#user" % nick
-            triples += [(freenodeURI, SIOC.space_of, user),
+            triples += [None,
+                        (freenodeURI, SIOC.space_of, user),
                         (user, RDFS.label, PlainLiteral(nick)),
                         (user, RDF.type, SIOC.User)]
+            if nick in nick2people:
+                triples += [(nick2people[nick], FOAF.holdsAccount, user)]
 
         writer = TurtleWriter(None, namespaces)
         title = "User index"
