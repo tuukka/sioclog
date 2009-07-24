@@ -294,6 +294,11 @@ class HtmlSink(IrcSink):
 
         self.events = []
 
+        self.context = context = new_context()
+        context.addGlobal('crumbs', self.crumbs)
+        context.addGlobal('datarooturi', self.root)
+        context.addGlobal('datauri', self.datauri)
+
     def irc_PRIVMSG(self, line):
         id = line.ztime.split("T")[1][:-1] # FIXME not unique
         time = id.split(".")[0]
@@ -309,10 +314,7 @@ class HtmlSink(IrcSink):
     handleReceivedFallback = lambda self,x:None
 
     def close(self):
-        context = new_context()
-        context.addGlobal('crumbs', self.crumbs)
-        context.addGlobal('datarooturi', self.root)
-        context.addGlobal('datauri', self.datauri)
+        context = self.context
 
         channelID = self.channel.strip("#").lower()
         channelURI = self.root + channelID + "#channel"
@@ -327,6 +329,40 @@ class HtmlSink(IrcSink):
 
         template = get_template('channellog')
         expand_template(template, context)
+
+
+class BackLogHtmlSink(HtmlSink):
+    def __init__(self, nick, up_to, *args):
+        HtmlSink.__init__(self, *args)
+        self.nick = nick
+        self.up_to = up_to
+        self.cleared = False
+        self.clear = False
+
+    def handleReceived(self, line):
+        if self.up_to and line.ztime[:len(self.up_to)] >= self.up_to:
+            return
+
+        if line.prefix:
+            nick,_acct = parseprefix(line.prefix)
+            if nick == self.nick:
+                if not (line.cmd == "JOIN" or (line.cmd == "QUIT" and line.args[0].count("freenode.net"))):
+                    self.clear = True
+            elif line.cmd == "PRIVMSG" and self.clear: # XXX ? clear only when someone else says something
+                self.clear = False
+                self.cleared = True
+                self.events = self.events[-1:] # everything this far was old news to nick
+                self.cleartime = line.ztime
+
+        HtmlSink.handleReceived(self, line)
+            
+    def close(self):
+        if not self.cleared:
+            self.events = [] # we never cleared, thus nothing was backlog
+        else:
+            self.context.addGlobal('prevlink', self.datauri+"?up_to="+self.cleartime)
+
+        HtmlSink.close(self)
 
 
 class TurtleSink(IrcSink):

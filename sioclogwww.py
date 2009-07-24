@@ -9,7 +9,7 @@ runcgi("sioclogbot.log")
 
 import cgi, os
 
-from channellog import OffFilter, ChannelFilter, TimeFilter, HtmlSink, TurtleSink, RawSink, ChannelsAndDaysSink, run, AddLinksFilter
+from channellog import OffFilter, ChannelFilter, TimeFilter, HtmlSink, TurtleSink, RawSink, ChannelsAndDaysSink, run, AddLinksFilter, BackLogHtmlSink
 from templating import new_context, get_template, expand_template
 from turtle import PlainLiteral, TypedLiteral, TurtleWriter
 from vocabulary import namespaces, RDF, RDFS, OWL, DC, DCTERMS, XSD, FOAF, SIOC, SIOCT, DS
@@ -23,7 +23,8 @@ def runcgi(logfile):
     HTTP_ACCEPT = os.environ.get('HTTP_ACCEPT', "")
     PATH_INFO = os.environ.get('PATH_INFO', "")
 
-#    query = cgi.FieldStorage()
+    query = cgi.FieldStorage()
+    up_to = query.getfirst("up_to", None)
 #    channel = query.getfirst("channel", "")
 #    timeprefix = query.getfirst("time", "")
 
@@ -59,7 +60,7 @@ def runcgi(logfile):
     if parts[-1].endswith(extension):
         parts[-1] = parts[-1][:-len(extension) or None]
 
-    if len(parts) > 1 and parts[1] not in ["channels", "users"]:
+    if len(parts) > 1 and parts[1] not in ["channels", "users", "backlog"]:
         parts.insert(1, "channels") # XXX default type for now
 
     if len(parts) > 1:
@@ -79,7 +80,7 @@ def runcgi(logfile):
 
     # XXX the following assumes http over port 80, no QUERY_STRING
     requesturi = "http://"+HTTP_HOST+REQUEST_URI
-    datauri = requesturi
+    datauri = requesturi.split("?")[0] # exclude QUERY_STRING
     # remove extension if any, to reset content negotiation in datauri:
     if datauri.endswith(extension):
         datauri = datauri[:-len(extension) or None]
@@ -108,7 +109,15 @@ def runcgi(logfile):
     elif channel and timeprefix:
         # show log
         if format == "html":
-            sink = AddLinksFilter(HtmlSink(crumbs, datarooturi, channel, timeprefix, datauri))
+            if restype == "backlog":
+                # FIXME temporary hack to get the params right:
+                nick = channel
+                channel = timeprefix
+                timeprefix = nick
+                sink = AddLinksFilter(BackLogHtmlSink(nick, up_to, crumbs, datarooturi, channel, timeprefix, datauri))
+                timeprefix = ""
+            else:
+                sink = AddLinksFilter(HtmlSink(crumbs, datarooturi, channel, timeprefix, datauri))
         elif format == "turtle":
             sink = AddLinksFilter(TurtleSink(datarooturi, channel, timeprefix))
         elif format == "raw":

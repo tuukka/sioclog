@@ -61,9 +61,14 @@ These logs are provided as an experiment in indexing discussions using
 </p>
 </div>
 -->
+<p>
 <em>
 Times are in UTC/GMT.
 </em>
+</p>
+<p tal:condition="prevlink">
+  <a tal:attributes="href prevlink">Go to previous</a>
+</p>
 
 <table>
 <tr tal:repeat="event events">
