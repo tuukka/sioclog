@@ -70,25 +70,39 @@ Times are in UTC/GMT.
   <a tal:attributes="href prevlink">Go to previous</a>
 </p>
 
-<table>
+<table class="log">
+<colgroup>
+<col />
+<col />
+<col />
+</colgroup>
+<tr tal:condition="not:events">
+<td>
+<strong>No matching messages/events found.</strong>
+</td>
+</tr>
 <tr tal:repeat="event events">
-<td><a tal:attributes="name event/id; href string:#${event/id}"
-       tal:content="event/time"
-       name="00:00:00.0" href="#00:00:00.0">00:00:00</a></td>
+<td class="time">
+  [<a tal:attributes="name event/id; href string:#${event/id}"
+      tal:content="event/time"
+      name="00:00:00.0" href="#00:00:00.0">00:00:00</a>]
+</td>
 <div tal:condition="event/isAction" tal:omit-tag="">
-  <td> * </td>
-  <td>
+  <td class="nick"> * </td>
+  <td class="content">
     <a tal:attributes="href event/creator"
        tal:content="event/nick"
+       class="nick"
        href="http://example.org/exampleUser">exampleNick</a>
     <span tal:content="structure event/content">
       does exampleAction.</span>
   </td>
 </div>
 <div tal:condition="not:event/isAction" tal:omit-tag="">
-  <td>&lt;<a tal:attributes="href event/creator"
-	     tal:content="event/nick"
-	     href="http://example.org/exampleUser">exampleNick</a>&gt;
+  <td class="nick">
+    &lt;<a tal:attributes="href event/creator"
+	   tal:content="event/nick"
+	   href="http://example.org/exampleUser">exampleNick</a>&gt;
   </td>
   <td tal:content="structure event/content" class="content">exampleContent.</td>
 </div>

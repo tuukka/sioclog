@@ -12,6 +12,31 @@ def css_stylesheet():
 
 body {
     margin: 1em;
+    background: white;
+    color: black;
+}
+
+a {
+    color: red;
+    text-decoration: none;
+    border-bottom: 1px solid #ff9999;
+}
+
+a:visited {
+    color: darkmagenta;
+    border-bottom: 1px solid #dd99ff;
+}
+
+a:hover, td.time a:hover, td.nick a:hover, a.nick:hover {
+    color: red;
+    border-bottom: 1px solid red;
+//    text-decoration: underline; 
+}
+
+a:hover:visited, td.time a:hover:visited, td.nick a:hover:visited, a.nick:hover:visited {
+    color: darkmagenta;
+    border-bottom: 1px solid darkmagenta;
+//    text-decoration: underline; 
 }
 
 .right-bar {
@@ -92,6 +117,37 @@ body {
     margin: 0;
     padding: 0.1em 0.5em 0.1em 0.2em;
     background: #ccccff;
+}
+
+table {
+    margin: 1em;
+    border-collapse: collapse;
+}
+
+table.log {
+    background: #f5f5ff;
+}
+
+td.time, td.time a {
+    color: gray;
+    text-decoration: none;
+}
+
+td.nick {
+    text-align: right;
+    color: gray;
+    padding-left: 1em;
+    padding-right: 0.2em;
+}
+
+td.nick a, a.nick {
+    color: black;
+    text-decoration: none;
+}
+
+td.content {
+    border-left: 1px solid lightgray;
+    padding-left: 0.2em;
 }
 
 th {
