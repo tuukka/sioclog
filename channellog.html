@@ -81,7 +81,7 @@ Times are in UTC/GMT.
     <a tal:attributes="href event/creator"
        tal:content="event/nick"
        href="http://example.org/exampleUser">exampleNick</a>
-    <span tal:content="event/content">
+    <span tal:content="structure event/content">
       does exampleAction.</span>
   </td>
 </div>
@@ -90,7 +90,7 @@ Times are in UTC/GMT.
 	     tal:content="event/nick"
 	     href="http://example.org/exampleUser">exampleNick</a>&gt;
   </td>
-  <td tal:content="event/content">exampleContent.</td>
+  <td tal:content="structure event/content" class="content">exampleContent.</td>
 </div>
 </tr>
 </table>
