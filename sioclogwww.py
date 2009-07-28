@@ -53,7 +53,10 @@ def runcgi(logfile):
         elif "text" in HTTP_ACCEPT:
             format = "raw"
         else:
-            format = "turtle" # default
+            if "Googlebot" in os.environ.get('HTTP_USER_AGENT', ""):
+                format = "html" # Accept: */* isn't the full truth...
+            else:
+                format = "turtle" # default
 
     parts = PATH_INFO.split('/')
     # remove extension if any:
