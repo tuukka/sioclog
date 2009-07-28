@@ -145,6 +145,11 @@ td.time, td.time a {
     text-decoration: none;
 }
 
+td.channel {
+    padding-left: 1em;
+    padding-right: 0.2em;
+}
+
 td.nick {
     text-align: right;
     color: gray;

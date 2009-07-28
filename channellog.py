@@ -378,6 +378,42 @@ class BackLogHtmlSink(HtmlSink):
         HtmlSink.close(self)
 
 
+class UserFilter(IrcFilter):
+    def __init__(self, user, sink):
+        IrcFilter.__init__(self, sink)
+        self.user = user
+
+    def handleReceived(self, line):
+        if not line.prefix:
+            return
+        nick,_ = parseprefix(line.prefix)
+        if nick == self.user:
+            self.sink.handleReceived(line)
+
+
+class ChannelMessageTailFilter(IrcFilter):
+    def __init__(self, n, sink):
+        IrcFilter.__init__(self, sink)
+        self.n = n
+        self.channels = {}
+        self.count = 0
+
+    def irc_PRIVMSG(self, line):
+        channel = line.args[0]
+        if not channel.startswith("#"):
+            return True # filter out
+
+        self.channels[channel] = [(self.count, line)] + self.channels.get(channel, [])[:self.n]
+        self.count += 1
+        return True # we'll rehandle this later
+
+    def close(self):
+        events = sum(self.channels.values(), [])
+        events.sort()
+        for _,line in events:
+            self.sink.handleReceived(line)
+
+
 class TurtleSink(IrcSink):
     """A sink that renders the lines it receives as a Turtle RDF document"""
     def __init__(self, root, channel, timeprefix):

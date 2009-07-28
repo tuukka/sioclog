@@ -51,6 +51,48 @@
 
 </div>
 
+<h3>Most recent messages from this user</h3>
+<table class="log">
+<colgroup>
+<col />
+<col />
+<col />
+</colgroup>
+<tr tal:condition="not:events">
+<td>
+<strong>No matching messages/events found.</strong>
+</td>
+</tr>
+<tr tal:repeat="event events">
+<td class="time">
+  [<a tal:attributes="name event/id; href string:#${event/id}"
+      tal:content="string:${event/date}T${event/time}"
+      name="00:00:00.0" href="#00:00:00.0">00:00:00</a>]
+</td>
+<div tal:condition="event/isAction" tal:omit-tag="">
+  <td class="channel"><span tal:content="event/channel">#exampleChannel</span> * </td>
+  <!-- whitespace is significant within content -->
+  <td class="content"><a 
+    tal:attributes="href event/channelURI"
+    tal:content="event/nick"
+    class="nick"
+    href="http://example.org/exampleUser"
+  >exampleNick</a> <span 
+    tal:content="structure event/content"
+  >does exampleAction.</span></td>
+</div>
+<div tal:condition="not:event/isAction" tal:omit-tag="">
+  <td class="channel">
+    <a tal:attributes="href event/channelURI"
+	   tal:content="event/channel"
+	   href="http://example.org/exampleChannel">exampleChannel</a>
+  </td>
+  <td tal:content="structure event/content" class="content">exampleContent.</td>
+</div>
+</tr>
+</table>
+
+
 <table><tr><td>
 <img src="http://irc.sioc-project.org/images/foaf.png" align="left" />
 </td><td>

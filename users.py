@@ -215,7 +215,7 @@ def render_user_index(sink, format, crumbs, datarooturi, datauri):
         writer.write(triples)
         writer.close()
 
-def render_user(sink, format, crumbs, datarooturi, nick, datauri):
+def render_user(sink, format, crumbs, datarooturi, nick, datauri, latestsink):
     userURI = "http://irc.sioc-project.org/users/%s#user" % nick
 
     global Red
@@ -272,6 +272,8 @@ def render_user(sink, format, crumbs, datarooturi, nick, datauri):
             channelURI = datarooturi + "%s#channel" % channel
             channeldata.append({'uri': channelURI, 'name': "#"+channel})
         context.addGlobal('channels', channeldata)
+
+        context.addGlobal('events', latestsink.events)
 
         template = get_template('user')
         expand_template(template, context)

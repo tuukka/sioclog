@@ -9,7 +9,7 @@ runcgi("sioclogbot.log")
 
 import cgi, os
 
-from channellog import OffFilter, ChannelFilter, TimeFilter, HtmlSink, TurtleSink, RawSink, ChannelsAndDaysSink, run, AddLinksFilter, BackLogHtmlSink
+from channellog import OffFilter, ChannelFilter, TimeFilter, HtmlSink, TurtleSink, RawSink, ChannelsAndDaysSink, run, AddLinksFilter, BackLogHtmlSink, ChannelMessageTailFilter, UserFilter, EventSink
 from templating import new_context, get_template, expand_template
 from turtle import PlainLiteral, TypedLiteral, TurtleWriter
 from vocabulary import namespaces, RDF, RDFS, OWL, DC, DCTERMS, XSD, FOAF, SIOC, SIOCT, DS
@@ -107,7 +107,12 @@ def runcgi(logfile):
     if restype == "users" and channel:
         sink = ChannelsAndDaysSink()
         run(file(logfile), sink)
-        render_user(sink, format, crumbs, datarooturi, channel, datauri)
+
+        latestsink = EventSink(datarooturi, None, None, datauri)
+        latestpipeline = OffFilter(UserFilter(channel, ChannelMessageTailFilter(1, AddLinksFilter(latestsink))))
+        run(file(logfile), latestpipeline)
+
+        render_user(sink, format, crumbs, datarooturi, channel, datauri, latestsink)
     elif restype == "users":
         sink = ChannelsAndDaysSink()
         run(file(logfile), sink)
