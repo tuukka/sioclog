@@ -89,14 +89,15 @@ Times are in UTC/GMT.
 </td>
 <div tal:condition="event/isAction" tal:omit-tag="">
   <td class="nick"> * </td>
-  <td class="content">
-    <a tal:attributes="href event/creator"
-       tal:content="event/nick"
-       class="nick"
-       href="http://example.org/exampleUser">exampleNick</a>
-    <span tal:content="structure event/content">
-      does exampleAction.</span>
-  </td>
+  <!-- whitespace is significant within content -->
+  <td class="content"><a 
+    tal:attributes="href event/creator"
+    tal:content="event/nick"
+    class="nick"
+    href="http://example.org/exampleUser"
+  >exampleNick</a> <span 
+    tal:content="structure event/content"
+  >does exampleAction.</span></td>
 </div>
 <div tal:condition="not:event/isAction" tal:omit-tag="">
   <td class="nick">

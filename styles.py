@@ -148,6 +148,7 @@ td.nick a, a.nick {
 td.content {
     border-left: 1px solid lightgray;
     padding-left: 0.2em;
+    white-space: pre-wrap;
 }
 
 th {
