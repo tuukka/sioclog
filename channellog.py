@@ -279,39 +279,52 @@ class OffFilter(IrcFilter):
     def handleReceivedFallback(self, line):
         self.sink.handleReceived(line)
 
-class HtmlSink(IrcSink):
-    """A sink that renders the lines it receives as a HTML table"""
-    def __init__(self, crumbs, root, channel, timeprefix, selfuri):
+
+class EventSink(IrcSink):
+    def __init__(self, root, channel, timeprefix, selfuri):
         IrcSink.__init__(self)
 
-        self.crumbs = crumbs
         self.root = root
         self.channel = channel
         self.timeprefix = timeprefix
         self.datauri = selfuri
 
-        self.title = "#%s on %s" % (channel, timeprefix)
-
         self.events = []
-
-        self.context = context = new_context()
-        context.addGlobal('crumbs', self.crumbs)
-        context.addGlobal('datarooturi', self.root)
-        context.addGlobal('datauri', self.datauri)
 
     def irc_PRIVMSG(self, line):
         id = line.ztime.split("T")[1][:-1] # FIXME not unique
+        date = line.ztime.split("T")[0]
         time = id.split(".")[0]
         nick,_acct = parseprefix(line.prefix)
+        channel = line.args[0]
+        channelURI = self.root + channel[1:] + "#channel"
         content = line.content_html #line.args[1]
         creator = self.root + "users/" + nick + "#user"
         action, content = parse_action(content)
         self.events.append({'id': id, 'time': time, 
+                            'date': date,
+                            'channel': channel,
+                            'channelURI': channelURI,
                             'isAction': action,
                             'creator': creator, 'nick': nick, 
                             'content': content.decode("utf-8")})
 
     handleReceivedFallback = lambda self,x:None
+
+
+class HtmlSink(EventSink):
+    """A sink that renders the lines it receives as a HTML table"""
+    def __init__(self, crumbs, root, channel, timeprefix, selfuri):
+        EventSink.__init__(self, root, channel, timeprefix, selfuri)
+
+        self.crumbs = crumbs
+
+        self.title = "#%s on %s" % (channel, timeprefix)
+
+        self.context = context = new_context()
+        context.addGlobal('crumbs', self.crumbs)
+        context.addGlobal('datarooturi', self.root)
+        context.addGlobal('datauri', self.datauri)
 
     def close(self):
         context = self.context
