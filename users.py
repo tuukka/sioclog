@@ -7,7 +7,7 @@ from users import render_user, render_user_index
 render_user(format, crumbs, datarooturi, nick, datauri)
 """
 
-import sys
+import sys, re, os
 from traceback import print_exc
 
 from channellog import TaxonomySink, run
@@ -137,6 +137,22 @@ def friend_values(model, subject, property):
                     user = "http://irc.sioc-project.org/users/%s#user" % nick
                     yield """<a href="%s">%s</a>""" % html_escapes(user, nick)
 
+def nick_values(model, subject, properties):
+    values = get_values(model, subject, properties)
+    for value in values:
+        if value is None:
+            yield None
+        elif value.is_resource():
+            uri = str(value.uri)
+            for pattern in [
+                r"http://(irc.sioc-project.org)/users/(.+)#user",
+                r"irc://(freenode|freenode.net|irc.freenode.net)/(.+),isnick"]:
+                match = re.match(pattern, uri)
+                if match and match.group(0) == uri:
+                    yield """
+<a href="http://irc.sioc-project.org/users/%s#user">%s</a>
+""" % html_escapes(match.groups()[1], match.groups()[1])
+
 def get_triples(model, subject, properties):
     for property in properties:
         values = model.get_targets(Red.Uri(subject), Red.Uri(property))
@@ -185,6 +201,8 @@ def render_user_index(sink, format, crumbs, datarooturi, datauri):
         writer.close()
 
 def render_user(sink, format, crumbs, datarooturi, nick, datauri):
+    userURI = "http://irc.sioc-project.org/users/%s#user" % nick
+
     global Red
     import RDF as Red
 
@@ -213,6 +231,14 @@ def render_user(sink, format, crumbs, datarooturi, nick, datauri):
         if person:
             for name in link_values(model, person, [FOAF.name, FOAF.firstName, FOAF.nick, RDFS.label]):
                 info.append({'key': 'Name', 'value': "%s" % name})
+            for ircnick in nick_values(model, person, [FOAF.holdsAccount]):
+                if userURI in ("%s" % ircnick):
+                    ircnick = ircnick + " <em>[confirms the Web ID claim]</em>"
+                elif ircnick is None:
+                    ircnick = """None <em>[can't confirm the Web ID claim, should be <a href="%s">%s</a>]</em>""" % (userURI, nick)
+                else:
+                    ircnick = ircnick + """ <em>[doesn't confirm the Web ID claim, should be <a href="%s">%s</a>]</em>""" % (userURI, nick)
+                info.append({'key': 'IRC account', 'value': "%s" % ircnick})
             for website in link_values(model, person, [FOAF.homepage]):
                 info.append({'key': 'Website', 'value': "%s" % website})
             for weblog in link_values(model, person, [FOAF.weblog]):
@@ -236,7 +262,6 @@ def render_user(sink, format, crumbs, datarooturi, nick, datauri):
         expand_template(template, context)
 
     elif format == "turtle":
-        userURI = "http://irc.sioc-project.org/users/%s#user" % nick
         oldUserURI = "irc://freenode/%s,isuser" % nick
         triples = [None,
                    (datarooturi + "#freenode", SIOC.space_of, userURI),
@@ -283,5 +308,5 @@ if __name__ == '__main__':
         print "Website: %s" % website
     for weblog in link_values(model, person, [FOAF.weblog]):
         print "Weblog: %s" % weblog
-    for img in image_values(model, [FOAF.img]):
+    for img in image_values(model, person, [FOAF.img]):
         print "Image: %s" % img
