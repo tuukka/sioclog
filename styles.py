@@ -110,6 +110,18 @@ a:hover:visited, td.time a:hover:visited, td.nick a:hover:visited, a.nick:hover:
     border-style: solid;
     border-color: #9999CC;
     border-width: 2px;
+
+    
+}
+
+.logo-bar a {
+    border: none;
+    display: block;
+}
+
+.logo-bar img {
+    border: none;
+    margin: 1em;
 }
 
 .logo-bar h3 {
@@ -163,9 +175,15 @@ td > a:target {
     background-color: lightblue;
 }
 
-img {
+.logolink {
+    white-space: nowrap;
+}
+
+.logolink img {
     border: none;
-    margin: 1em;
+    display: inline;
+    margin: 0;
+    vertical-align: text-top;
 }
 
 """

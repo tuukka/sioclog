@@ -480,6 +480,7 @@ class ChannelsAndDaysSink(IrcSink):
         self.day2channels = {}
         self.channel2days = {}
 
+        self.nicks = {}
         self.nick2channels = {}
         self.channel2nicks = {}
 
@@ -502,6 +503,7 @@ class ChannelsAndDaysSink(IrcSink):
 
         nick,_ = parseprefix(line.prefix)
 
+        self.nicks[nick] = True
         self.nick2channels.setdefault(nick, {})[channelName] = True
         self.channel2nicks.setdefault(channelName, {})[nick] = True
         

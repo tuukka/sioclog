@@ -13,7 +13,7 @@ from channellog import OffFilter, ChannelFilter, TimeFilter, HtmlSink, TurtleSin
 from templating import new_context, get_template, expand_template
 from turtle import PlainLiteral, TypedLiteral, TurtleWriter
 from vocabulary import namespaces, RDF, RDFS, OWL, DC, DCTERMS, XSD, FOAF, SIOC, SIOCT, DS
-from users import render_user, render_user_index
+from users import render_user, render_user_index, get_nick2people
 from styles import css_stylesheet
 
 def runcgi(logfile):
@@ -275,11 +275,15 @@ def html_index(sink, crumbs, root, datauri, querychannel):
 
     if querychannel:
         nicks = sorted(sink.channel2nicks[querychannel].keys())
-        userdata = []
-        for nick in nicks:
-            userURI = root + "users/%s#user" % nick
-            userdata.append({'uri': userURI, 'name': nick})
-        context.addGlobal('users', userdata)
+    else:
+        nicks = sorted(sink.nicks)
+
+    userdata = []
+    for nick in nicks:
+        userURI = root + "users/%s#user" % nick
+        userdata.append({'uri': userURI, 'name': nick})
+    context.addGlobal('users', userdata)
+    context.addGlobal('nick2people', get_nick2people())
 
     template = get_template('index')
     expand_template(template, context)

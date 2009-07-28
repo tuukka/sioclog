@@ -47,16 +47,19 @@ This is a discussion channel on the Freenode IRC network.
 <div tal:condition="not:querychannel" class="logo-bar">
 <h3>Features</h3>
 <a href="http://fenfire.org/"><img src="http://fenfire.org/logo.png" 
-alt="Fenfire" title="The Fenfire project" /></a>
+width="107" height="150" alt="Fenfire" title="The Fenfire project" /></a>
 <br />
-<a href="http://sioc-project.org/"><img src="http://sioc-project.org/files/sioc_button.gif" 
-alt="SIOC" title="Semantically-Interlinked Online Communities" /></a>
+<a href="http://sioc-project.org/"><img src="http://sioc-project.org/files/sioc_logo.gif" 
+width="102" height="100" alt="SIOC" title="Semantically-Interlinked Online Communities" /></a>
+<br />
+<a href="http://foaf-project.org/"><img src="http://irc.sioc-project.org/images/foaf-128.png" 
+width="100" height="52" alt="FOAF" title="Friend of a Friend" /></a>
 <br />
 <a href="http://linkeddata.org/"><img src="http://irc.sioc-project.org/images/linkingopendata.png"
-width="100" alt="Linked Data" title="Linked Data" /></a>
+width="100" height="119" alt="Linked Data" title="Linked Data" /></a>
 <br />
 <a href="http://www.w3.org/RDF/"><img src="http://www.w3.org/RDF/icons/rdf_w3c_icon.96"
-alt="RDF" title="RDF Resource Description Framework" /></a>
+width="88" height="96" alt="RDF" title="RDF Resource Description Framework" /></a>
 </div>
 
 </div>
@@ -70,12 +73,7 @@ Semantically-Interlinked Online Communities Project</a> for details).
 </p>
 -->
 
-<h2 tal:condition="querychannel">Logged information</h2>
-
-<h2 tal:condition="not:querychannel">Channels</h2>
-<p tal:condition="not:querychannel">
-<em>See also <a href="http://irc.sioc-project.org/users">users</a>.</em>
-</p>
+<h2>Logged information</h2>
 
 <!-- Google CSE Search Box Begins  -->
 <form action="http://www.google.com/cse" id="searchbox_009180828701492049973:6ly
@@ -90,7 +88,7 @@ Semantically-Interlinked Online Communities Project</a> for details).
 rm=searchbox_009180828701492049973%3A6ly79qxejks&lang=en"></script> -->
 <!-- Google CSE Search Box Ends -->
 
-<table align="left">
+<table align="left" class="log">
 <thead><tr>
 <th>Discussions</th>
 <th tal:condition="querychannel"></th>
@@ -111,11 +109,18 @@ rm=searchbox_009180828701492049973%3A6ly79qxejks&lang=en"></script> -->
 </tr>
 </tbody></table>
 
-<table tal:condition="querychannel" align="left">
-<tr><th>Users</th></tr>
-<tr tal:repeat="user users">
+<table class="log">
+<tr><th><a href="http://irc.sioc-project.org/users">Users</a></th></tr>
+<tr>
 <td>
-  <a tal:attributes="href user/uri" tal:content="user/name"></a>
+<span tal:repeat="user users" tal:omit-tag="">
+  <span class="logolink">
+  <a tal:attributes="href user/uri">
+  <span tal:content="user/name" 
+  /><img tal:define="username user/name"
+       tal:condition="nick2people/?username"
+       src="http://irc.sioc-project.org/images/foaf-32.png" 
+       width="32" height="17" alt="FOAF" /></a></span> </span>
 </td>
 </tr>
 </table>
