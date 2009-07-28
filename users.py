@@ -19,6 +19,7 @@ from templating import new_context, get_template, expand_template
 from htmlutil import html_escape, html_escapes
 
 mttlbot_knowledge = None
+mttlbot_knowledge_builtin = None
 
 taxbot_knowledge = None
 
@@ -35,6 +36,17 @@ def get_mttlbot_knowledge():
     return m
 #   raptor_set_feature(rdf_parser, RAPTOR_FEATURE_WWW_TIMEOUT , 5);
 
+def get_mttlbot_knowledge_builtin():
+    global mttlbot_knowledge_builtin
+    if mttlbot_knowledge_builtin is not None:
+        return mttlbot_knowledge_builtin
+    global Red
+    import RDF as Red
+    m = mttlbot_knowledge_builtin = Red.Model()
+    m.load("file:%s/mttlbot_knowledge.ttl" % os.path.dirname(__file__), 
+           name='guess')
+    return m
+
 def get_taxbot_knowledge():
     global taxbot_knowledge
     if taxbot_knowledge is not None:
@@ -50,11 +62,14 @@ def get_taxbot_knowledge():
     return taxbot_knowledge
 
 def get_nick2people():
-    m = get_mttlbot_knowledge()
     nick2people = {}
-    for t in m.find_statements(Red.Statement(None, Red.Uri(FOAF.holdsAccount), None)):
-        nick = str(t.object.uri).rsplit(",", 1)[0][len("irc://192.168.100.27/"):]
-        nick2people[nick] = str(t.subject.uri)
+
+    # build nick2people with authoritative sources overwriting earlier ones:
+
+    for m in get_mttlbot_knowledge_builtin(), get_mttlbot_knowledge():
+        for t in m.find_statements(Red.Statement(None, Red.Uri(FOAF.holdsAccount), None)):
+            nick = str(t.object.uri).rsplit(",", 1)[0][len("irc://192.168.100.27/"):]
+            nick2people[nick] = str(t.subject.uri)
 
     triples = [t for t in get_taxbot_knowledge().values() if t]
     for triples in triples:
