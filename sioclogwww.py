@@ -9,6 +9,8 @@ runcgi("sioclogbot.log")
 
 import cgi, os
 
+from ircbase import w3c_timestamp, convert_timestamp_to_z
+
 from channellog import OffFilter, ChannelFilter, TimeFilter, HtmlSink, TurtleSink, RawSink, ChannelsAndDaysSink, run, AddLinksFilter, BackLogHtmlSink, ChannelMessageTailFilter, UserFilter, EventSink
 from templating import new_context, get_template, expand_template
 from turtle import PlainLiteral, TypedLiteral, TurtleWriter
@@ -16,7 +18,10 @@ from vocabulary import namespaces, RDF, RDFS, OWL, DC, DCTERMS, XSD, FOAF, SIOC,
 from users import render_user, render_user_index, get_nick2people
 from styles import css_stylesheet
 
-def runcgi(logfile):
+def runcgi(logfiles):
+    # FIXME can't infer this from CGI info?
+    datarooturi = "http://irc.sioc-project.org/"
+
     HTTP_HOST = os.environ.get('HTTP_HOST', "")
     SERVER_PORT = os.environ.get('SERVER_PORT', "")
     REQUEST_URI = os.environ.get('REQUEST_URI', "")
@@ -33,12 +38,21 @@ def runcgi(logfile):
         print
         css_stylesheet()
         return
+    elif PATH_INFO == "/sitemap.xml":
+        print "Content-type: text/xml"
+        sink = ChannelsAndDaysSink()
+        run(logfiles, sink)
+        sitemap_index(sink, datarooturi)
+        return
 
     if REQUEST_URI.endswith(".html"):
         extension = ".html"
         format = "html"
     elif REQUEST_URI.endswith(".turtle"):
         extension = ".turtle"
+        format = "turtle"
+    elif REQUEST_URI.endswith(".ttl"):
+        extension = ".ttl"
         format = "turtle"
     elif REQUEST_URI.endswith(".txt"):
         extension = ".txt"
@@ -88,9 +102,6 @@ def runcgi(logfile):
     if datauri.endswith(extension):
         datauri = datauri[:-len(extension) or None]
         
-    # FIXME can't infer this from CGI info?
-    datarooturi = "http://irc.sioc-project.org/"
-
     crumbs = list(create_index_crumbs(datarooturi, datauri, restype, channel, 
                                       timeprefix))
 
@@ -293,6 +304,61 @@ def html_index(sink, crumbs, root, datauri, querychannel):
     template = get_template('index')
     expand_template(template, context)
 
+def sitemap_entry(uri, timestamp, frequency, priority):
+    print "<url>"
+    print "  <loc>%s</loc>""" % uri
+    if timestamp:
+        print "  <lastmod>%s</lastmod>" % timestamp
+    if frequency:
+        print "  <changefreq>%s</changefreq>" % frequency
+    if priority:
+        print "  <priority>%s</priority>" % priority
+    print "</url>"
+
+def sitemap_index(sink, root):
+    now = convert_timestamp_to_z(w3c_timestamp())
+    today = now.split("T")[0]
+    print """
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+"""
+
+    # individual files:
+    sitemap_entry(root, max(sink.channel2latest.values()), "hourly", 1.0)
+    sitemap_entry(root+"about", None, "weekly", 1.0)
+    sitemap_entry(root+"users", None, "daily", 1.0)
+    print
+    # users:
+    nicks = sorted(sink.nicks.keys())
+    for nick in nicks:
+        sitemap_entry(root+"users/"+nick, sink.nick2latest[nick], "weekly", 0.9)
+    print
+    # channels:
+    channels = sorted(sink.channels.keys())
+    channelURIs = []
+    for channel in channels:
+        channelID = channel.strip("#").lower()
+        channelURI = root + channelID + "#channel"
+
+        sitemap_entry(channelURI, sink.channel2latest[channelID], "hourly", 0.9)
+    print
+    # today's logs:
+    for channel in channels:
+        channelID = channel.strip("#").lower()
+        logURI = "%s%s/%s" % (root, channelID, today)
+        latest = max([today, sink.channel2latest[channelID]])
+        sitemap_entry(logURI, latest, "hourly", 0.9)
+    print
+    # daily logs:
+    for channel in channels:
+        channelID = channel.strip("#").lower()
+        for day in sorted(sink.channel2days[channel]):
+            logURI = "%s%s/%s" % (root, channelID, day)
+
+            if day != today:
+                sitemap_entry(logURI, day, "never", 0.8)
+
+    print "</urlset>"
 
 if __name__ == '__main__':
     import sys, logging

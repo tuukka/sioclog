@@ -124,7 +124,7 @@ class ChannelFilter(IrcFilter):
         if line.cmd in ('NICK', 'QUIT'):
             if self.interestingchannel in relatedbefore:
                 self.sink.handleReceived(line)
-        elif line.cmd in ('JOIN','PART','KICK','PRIVMSG','NOTICE'):
+        elif line.cmd in ('JOIN','PART','KICK','PRIVMSG','NOTICE','TOPIC'):
             if line.args[0].lower() == self.interestingchannel:
                 self.sink.handleReceived(line)
         elif line.cmd in ('366','332','333','329'):
@@ -483,6 +483,9 @@ class RawSink(IrcSink):
     def handleReceivedFallback(self, line):
         print "%s %s" % (line.time,line)
 
+def incvalue(store, key):
+    store[key] = store.get(key, 0) + 1
+
 class ChannelsAndDaysSink(IrcSink):
     """A sink that collects the channels and days of activity that it sees"""
     def __init__(self):
@@ -493,9 +496,24 @@ class ChannelsAndDaysSink(IrcSink):
         self.day2channels = {}
         self.channel2days = {}
 
+        self.channel2topic = {}
+
         self.nicks = {}
         self.nick2channels = {}
         self.channel2nicks = {}
+
+        self.channel2latest = {}
+        self.nick2latest = {}
+
+    def irc_TOPIC(self, line):
+        channelId = line.args[0].strip("#").lower()
+        self.channel2topic[channelId] = line.args[1]
+#        print channelId, line.args[1]
+
+    def irc_RPL_TOPIC(self, line):
+        channelId = line.args[1].strip("#").lower()
+        self.channel2topic[channelId] = line.args[2]
+#        print channelId, line.args[2]
 
     def irc_PRIVMSG(self, line):
         time = line.ztime
@@ -506,20 +524,23 @@ class ChannelsAndDaysSink(IrcSink):
             return
         channelName = target.strip("#").lower()
         
-        self.days[day] = True
-        self.channels[channelName] = True
-        self.day2channels.setdefault(day, {})[channelName] = True
-        self.channel2days.setdefault(channelName, {})[day] = True
+        incvalue(self.days, day)
+        incvalue(self.channels, channelName)
+        incvalue(self.day2channels.setdefault(day, {}), channelName)
+        incvalue(self.channel2days.setdefault(channelName, {}), day)
+
+        self.channel2latest[channelName] = time
 
         if not line.prefix:
             return
 
         nick,_ = parseprefix(line.prefix)
 
-        self.nicks[nick] = True
-        self.nick2channels.setdefault(nick, {})[channelName] = True
-        self.channel2nicks.setdefault(channelName, {})[nick] = True
-        
+        incvalue(self.nicks, nick)
+        incvalue(self.nick2channels.setdefault(nick, {}), channelName)
+        incvalue(self.channel2nicks.setdefault(channelName, {}), nick)
+
+        self.nick2latest[nick] = time
 
     handleReceivedFallback = lambda self,x:None
 
