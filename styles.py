@@ -81,7 +81,14 @@ a:hover:visited, td.time a:hover:visited, td.nick a:hover:visited, a.nick:hover:
     margin-bottom: 1.5em;
 }
 
-.crumb-bar ul, .crumb-bar li {
+.crumb-bar ul {
+    display: block;
+    align: left;
+    margin: 0;
+    padding: 0;
+}
+
+.crumb-bar li {
     display: inline;
     margin: 0;
     padding: 0;
@@ -100,6 +107,30 @@ a:hover:visited, td.time a:hover:visited, td.nick a:hover:visited, a.nick:hover:
 .crumb-bar a {
 //    color: black;
 }
+
+ul.site-bar {
+    display: block;
+    float: right;
+    margin: 0;
+    padding: 0;
+}
+
+.site-bar li {
+    display: inline;
+    margin: 0;
+    padding: 0;
+}
+
+.site-bar li:before {
+    content: " | ";
+//    color: blue;
+}
+
+.site-bar li:first-child:before {
+    content: none;
+//    color: blue;
+}
+
 
 .logo-bar {
 //    float: right;

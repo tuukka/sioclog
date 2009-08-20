@@ -20,6 +20,9 @@
 <h1 tal:content="string:User ${here/nick}">User exampleUser</h1>
 
 <div class="crumb-bar">
+<ul class="site-bar">
+<li><a href="/about">About</a></li>
+</ul>
 <ul>
 <li tal:repeat="crumb crumbs"><a tal:attributes="href crumb/uri" tal:content="crumb/label"
      href="/example/path">exampleCrumb</a></li>
@@ -121,6 +124,9 @@ Example error message.
 </table>
 
 <div class="crumb-bar">
+<ul class="site-bar">
+<li><a href="/about">About</a></li>
+</ul>
 <ul>
 <li tal:repeat="crumb crumbs"><a tal:attributes="href crumb/uri" tal:content="crumb/label"
      href="/example/path">exampleCrumb</a></li>
