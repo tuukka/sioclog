@@ -19,7 +19,8 @@ sioclogbot.py irc.freenode.net 6667 sioc sioc "SIOC bot" "#sioc" sioc.log
 # * www server?
 # * unit tests
 
-import time
+from __future__ import with_statement
+
 from traceback import print_exc
 
 from twisted.internet import protocol, reactor # you'll need python-twisted
@@ -29,7 +30,7 @@ from twisted.python.rebuild import rebuild
 
 import ircbase
 ircbase.dbg = True
-from ircbase import parseprefix, Line, Irc
+from ircbase import parseprefix, Line, Irc, w3c_timestamp
 
 import sioclogbot # XXX import myself for rebuild
 
@@ -37,15 +38,6 @@ def info(msg):
     print msg
 err = info
 dbg = True
-
-def w3c_timestamp():
-    t = time.localtime()
-    timestamp = time.strftime("%Y-%m-%dT%H:%M:%S", t)
-    if t.tm_isdst:
-        timezone = time.altzone
-    else:
-        timezone = time.timezone
-    return "%s%+03d:%02d" % (timestamp, -timezone/60.0/60, abs(timezone)/60%60)
 
 
 class IrcServer(Irc):
@@ -146,6 +138,35 @@ class IrcServer(Irc):
             return True # don't log
         else: return False
 
+    def irc_PRIVMSG(self, line):
+        msg = line.args[1]
+
+        if line.args[0].startswith("#"):
+            if msg[1:].startswith(self.nick):
+                if msg[1+len(self.nick)+1:].strip() == "pointer":
+                    answerURI = self.factory.rootURI + line.args[0][1:].lower() + '/' + line.ztime.rstrip("Z").replace("T", "#")
+                    answer = "That line is " + answerURI
+                    self.sendLine(Line("NOTICE", [line.args[0], answer]))
+
+        if line.args[0] != self.nick:
+            return False # not to us
+        if parseprefix(line.prefix)[0] != self.factory.admin:
+            return False # not from admin
+
+        if msg == "+rebuild":
+            try:
+                rebuild(sioclogbot)
+                info("rebuilt")
+            except:
+                print_exc()
+        elif msg.startswith("+do "):
+            try:
+                self.sendLine(Line(linestr=msg[len("+do "):]))
+            except:
+                print_exc()
+
+        return False # log
+
     # response filtering:
     def filter_oneline(self, reqlist, line, argindex = 1):
         obj = line.args[argindex]
@@ -206,6 +227,9 @@ class IrcServer(Irc):
             self.clientprefix = self.nick + '!' + self.user
     def irc_JOIN(self, line):
         if self.isme(line.prefix):
+            # we first get the real self.user from server here
+            _, self.user = parseprefix(line.prefix)
+            self.clientprefix = self.nick + '!' + self.user
             self.channels.append(line.args[0])
     def irc_PART(self, line):
         if self.isme(line.prefix):
@@ -242,7 +266,14 @@ class IrcServer(Irc):
         if line.cmd == 'AWAY':
             if len(line.args) > 0 and line.args[0] != '': # if setting away:
                 self.awaymsg = line.args[0]
-
+        if line.cmd in ["PRIVMSG", "NOTICE"]:
+            # need to log self. simulate server info:
+            fakeargs = line.args
+            fakeargs[1] = "+" + fakeargs[1] # we are "identified"
+            fakeline = Line(cmd=line.cmd, args=fakeargs,
+                              prefix=self.clientprefix, time=w3c_timestamp())
+            # log the line *after* the line currently being processed
+            reactor.callLater(0, self.logLine, fakeline)
         if dbg: info("Sent to server: %s" % line)
         Irc.sendLine(self, line)
 
@@ -267,7 +298,7 @@ class IrcServerFactory(protocol.ClientFactory):
     """Factory that will create an IrcServer object per connection."""
     protocol = IrcServer
 
-    def __init__(self, server, serverport, nick, user, name, channels, logname):
+    def __init__(self, server, serverport, nick, user, name, channels, logname, admin, rootURI):
         self.server = server
         self.serverport = serverport
         self.nick = nick
@@ -275,13 +306,13 @@ class IrcServerFactory(protocol.ClientFactory):
         self.name = name
         self.channels = channels
         self.logname = logname
+        self.admin = admin
+        self.rootURI = rootURI
 
         self.store = [] # lines sent before we had a connection to the server
         self.backoff = None # fail fast if we can't make the first connection
         self.instance = None # the IrcServer object for the current connection
 
-        self.logfile = file(self.logname, "ab")
-        
     def clientConnectionLost(self, connector, reason):
         """If we get disconnected, reconnect to server."""
         err("Connection to server lost: %s" % reason.value)
@@ -299,8 +330,9 @@ class IrcServerFactory(protocol.ClientFactory):
             reactor.stop()
 
     def logLine(self, line):
-        self.logfile.write("%s %s\r\n" % (w3c_timestamp(), line))
-        self.logfile.flush()
+        with file(self.logname, "ab") as logfile:
+            logfile.write("%s %s\r\n" % (line.time, line))
+            logfile.flush()
 
 # first when started, initiate a connection to the server
 if __name__ == "__main__":
@@ -313,9 +345,11 @@ if __name__ == "__main__":
         name = sys.argv[5]
         channels = sys.argv[6].split(",")
         logfile = sys.argv[7]
+        admin = sys.argv[8]
+        rootURI = sys.argv[9]
     except Exception, e:
         err(str(e))
-        err("Usage: %s server serverport nick user name channels logfile"
+        err("Usage: %s server serverport nick user name channels logfile admin"
             % sys.argv[0])
         sys.exit(5)
     info("i am %s!%s :%s" % (nick, user, name))
@@ -323,8 +357,9 @@ if __name__ == "__main__":
     info("connecting to %s on port %d..." % (server, serverport))
     reactor.connectTCP(server, serverport,
                        sioclogbot.IrcServerFactory(server, serverport,
-                                                nick, user, name,
-                                                channels, logfile))
+                                                   nick, user, name,
+                                                   channels, logfile, 
+                                                   admin, rootURI))
     info("entering main loop...")
     reactor.run()
     info("main loop done")

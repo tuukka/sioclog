@@ -10,6 +10,7 @@ class IrcFilter(Irc):
     ...
 """
 
+import re, time, datetime
 from traceback import print_exc
 
 from twisted.protocols import basic
@@ -19,6 +20,37 @@ def info(msg):
     print msg
 err = info
 dbg = False
+
+def w3c_timestamp():
+    t = time.localtime()
+    timestamp = time.strftime("%Y-%m-%dT%H:%M:%S", t)
+    if t.tm_isdst:
+        timezone = time.altzone
+    else:
+        timezone = time.timezone
+    return "%s%+03d:%02d" % (timestamp, -timezone/60.0/60, abs(timezone)/60%60)
+
+datetimere = r"(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(\.\d+)?"
+timezonere = r"(Z|(\+|-)(\d{2}):(\d{2}))"
+timere = re.compile(datetimere + timezonere)
+def convert_timestamp_to_z(text):
+    # 2009-07-04T15:14:21.231+03:00
+    match = timere.match(text)
+    if match and match.group(0) == text:
+        if match.groups()[7] == "Z":
+            return text
+        else:
+            localtime = datetime.datetime(*map(int, match.groups()[:6]))
+            fraction = match.groups()[6] or ""
+            tzsign, tzhours, tzminutes = match.groups()[8:]
+            distance = datetime.timedelta(hours=int(tzhours), 
+                                          minutes=int(tzminutes))
+            if tzsign == "-":
+                utctime = localtime + distance
+            else:
+                utctime = localtime - distance
+            return utctime.isoformat() + fraction + "Z"
+    return
 
 ### copy from irchub.py starts...
 
@@ -39,6 +71,9 @@ class Line:
                  source=None, time=None, linestr=None):
         self.source = source
         self.time = time
+        self.ztime = None
+        if time:
+            self.ztime = convert_timestamp_to_z(time)
         if linestr != None: self.init_linestr(linestr)
         else: self.init_words(cmd, args, prefix)
     def init_linestr(self, linestr):
@@ -73,7 +108,7 @@ class Irc(basic.LineReceiver):
         try:
             linestr = linestr.rstrip('\r') # according to RFC, there is \r
             if dbg: info("%s: %s" % (self.__class__.__name__, linestr))
-            self.handleReceived(Line(linestr=linestr, source=self))
+            self.handleReceived(Line(linestr=linestr, source=self, time=w3c_timestamp()))
         except:
             print_exc()
 

@@ -8,7 +8,7 @@ pipeline = ChannelFilter("#sioc", RawSink())
 run(file("sioc.log"), pipeline)
 """
 
-import sys, re, datetime
+import sys, re
 
 from traceback import print_exc
 
@@ -21,27 +21,6 @@ from turtle import PlainLiteral, TypedLiteral, TurtleWriter
 from vocabulary import namespaces, RDF, RDFS, OWL, DC, DCTERMS, XSD, FOAF, SIOC, SIOCT, DS
 from htmlutil import html_escape, html_unescape
 
-datetimere = r"(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(\.\d+)?"
-timezonere = r"(Z|(\+|-)(\d{2}):(\d{2}))"
-timere = re.compile(datetimere + timezonere)
-def convert_timestamp_to_z(text):
-    # 2009-07-04T15:14:21.231+03:00
-    match = timere.match(text)
-    if match and match.group(0) == text:
-        if match.groups()[7] == "Z":
-            return text
-        else:
-            localtime = datetime.datetime(*map(int, match.groups()[:6]))
-            fraction = match.groups()[6] or ""
-            tzsign, tzhours, tzminutes = match.groups()[8:]
-            distance = datetime.timedelta(hours=int(tzhours), 
-                                          minutes=int(tzminutes))
-            if tzsign == "-":
-                utctime = localtime + distance
-            else:
-                utctime = localtime - distance
-            return utctime.isoformat() + fraction + "Z"
-    return
 
 def parse_action(text):
     if text.startswith("\x01ACTION ") and text.endswith("\x01"):
@@ -61,11 +40,6 @@ class IrcFilter(Irc):
 class IrcSink(IrcFilter):
     def __init__(self):
         IrcFilter.__init__(self, None)
-
-class AddZTimeFilter(IrcFilter):
-    def handleReceivedFallback(self, line):
-        line.ztime = convert_timestamp_to_z(line.time)
-        self.sink.handleReceived(line)
 
 class AddRegisteredFilter(IrcFilter):
     def irc_PRIVMSG(self, line):
@@ -164,6 +138,9 @@ class ChannelFilter(IrcFilter):
 # state tracking:
     def irc_RPL_WELCOME(self, line):
         self.nick = line.args[0]
+
+        _, self.user = parseprefix(line.args[-1].split(' ')[-1])
+        self.clientprefix = "%s!%s" % (self.nick, self.user)
 
         # reset state from previous connects:
 
@@ -579,7 +556,7 @@ class TaxonomySink(IrcSink):
 
 def run(inputstream, pipeline):
     """Processes each line from the input in the pipeline and closes it"""
-    pipeline = AddRegisteredFilter(AddZTimeFilter(pipeline))
+    pipeline = AddRegisteredFilter(pipeline)
     for i, l in enumerate(inputstream):
         #print l
         time, linestr = l[:-1].split(" ",1)
