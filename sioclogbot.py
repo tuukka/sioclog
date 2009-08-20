@@ -82,7 +82,9 @@ class IrcServer(Irc):
                                     % (self.nick,
                                        self.user, reason.value)]))
         # XXX what else? inform clients?
-        self.factory.instance = None
+        self.factory = None
+        if self.timeoutCall:
+            self.timeoutCall.cancel()
 
     def logLine(self, line):
         self.factory.logLine(line)
@@ -231,12 +233,15 @@ class IrcServer(Irc):
             _, self.user = parseprefix(line.prefix)
             self.clientprefix = self.nick + '!' + self.user
             self.channels.append(line.args[0])
+            self.factory.channels.append(line.args[0])
     def irc_PART(self, line):
         if self.isme(line.prefix):
             self.channels.remove(line.args[0])
+            self.factory.channels.remove(line.args[0])
     def irc_KICK(self, line):
         if line.args[1] == self.nick:
             self.channels.remove(line.args[0])
+            self.factory.channels.remove(line.args[0])
     def irc_RPL_UNAWAY(self, _):
         self.away = False
     def irc_RPL_NOWAWAY(self, _):
@@ -316,6 +321,7 @@ class IrcServerFactory(protocol.ClientFactory):
     def clientConnectionLost(self, connector, reason):
         """If we get disconnected, reconnect to server."""
         err("Connection to server lost: %s" % reason.value)
+        self.instance = None
         self.backoff = 5 # seconds. setting this starts retrying connects
         connector.connect()
         
