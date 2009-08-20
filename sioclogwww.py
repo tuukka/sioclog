@@ -106,16 +106,16 @@ def runcgi(logfile):
 
     if restype == "users" and channel:
         sink = ChannelsAndDaysSink()
-        run(file(logfile), sink)
+        run(logfiles, sink)
 
         latestsink = EventSink(datarooturi, None, None, datauri)
         latestpipeline = OffFilter(UserFilter(channel, ChannelMessageTailFilter(1, AddLinksFilter(latestsink))))
-        run(file(logfile), latestpipeline)
+        run(logfiles, latestpipeline)
 
         render_user(sink, format, crumbs, datarooturi, channel, datauri, latestsink)
     elif restype == "users":
         sink = ChannelsAndDaysSink()
-        run(file(logfile), sink)
+        run(logfiles, sink)
         render_user_index(sink, format, crumbs, datarooturi, datauri)
     elif channel and timeprefix:
         # show log
@@ -140,7 +140,7 @@ def runcgi(logfile):
                                                       )
                                            ))
 
-        run(file(logfile), pipeline)
+        run(logfiles, pipeline)
 
     else:
         # show index
@@ -153,7 +153,7 @@ def runcgi(logfile):
         else:
             pipeline = sink
 
-        run(file(logfile), pipeline)
+        run(logfiles, pipeline)
 
         if format == "html":
             html_index(sink, crumbs, datarooturi, datauri, channel)

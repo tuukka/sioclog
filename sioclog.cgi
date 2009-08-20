@@ -10,4 +10,4 @@ sys.path.insert(0, '/home/sioclog/sioclog')
 from sioclogwww import runcgi
 
 # change this to point to the log written by sioclogbot.py
-runcgi("/home/sioclog/freenode.log")
+runcgi(["/home/sioclog/freenode.log.2008", "/home/sioclog/freenode.log"])

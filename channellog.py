@@ -554,18 +554,29 @@ class TaxonomySink(IrcSink):
             self.taxonomy_response.append((self.taxonomy_state, key, value))
 
 
-def run(inputstream, pipeline):
-    """Processes each line from the input in the pipeline and closes it"""
+def run(sources, pipeline):
+    """Processes each line from the sources in the pipeline and closes it"""
+    if not isinstance(sources, list):
+        sources = [sources]
+
     pipeline = AddRegisteredFilter(pipeline)
-    for i, l in enumerate(inputstream):
-        #print l
-        time, linestr = l[:-1].split(" ",1)
-        try:
-            linestr = linestr.rstrip('\r') # according to RFC, there is \r
-            pipeline.handleReceived(Line(linestr=linestr, time=time))
-        except:
-            print_exc()
-            print >>sys.stderr, "... on line %s: %s" % (i+1, l)
+
+    for source in sources:
+        if not isinstance(source, file):
+            try:
+                source = file(source)
+            except:
+                print_exc()
+                continue
+        for i, l in enumerate(source):
+            #print l
+            time, linestr = l[:-1].split(" ",1)
+            try:
+                linestr = linestr.rstrip('\r') # according to RFC, there is \r
+                pipeline.handleReceived(Line(linestr=linestr, time=time))
+            except:
+                print_exc()
+                print >>sys.stderr, "... on %s:%s: %s" % (source.name, i+1, l)
 
     pipeline.close()
 
