@@ -5,9 +5,9 @@
 Requires Twisted Python
 
 Usage: 
-sioclogbot.py server serverport nick user name channels logfile
+sioclogbot.py server serverport nick user name channels logfile admin rootURI
 For example:
-sioclogbot.py irc.freenode.net 6667 sioc sioc "SIOC bot" "#sioc" sioc.log
+sioclogbot.py irc.freenode.net 6667 sioc sioc "SIOC bot" "#sioc" sioc.log tuukkah http://irc.sioc-project.org/
 """
 
 # ChangeLog:
@@ -355,7 +355,7 @@ if __name__ == "__main__":
         rootURI = sys.argv[9]
     except Exception, e:
         err(str(e))
-        err("Usage: %s server serverport nick user name channels logfile admin"
+        err("Usage: %s server serverport nick user realname channels logfile admin rootURI"
             % sys.argv[0])
         sys.exit(5)
     info("i am %s!%s :%s" % (nick, user, name))
