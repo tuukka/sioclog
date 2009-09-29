@@ -138,7 +138,7 @@ def image_values(model, subject, property):
         elif value.is_resource():
             yield """<img src="%s" />""" % html_escapes(value.uri)
 
-def friend_values(model, subject, property):
+def friend_values(datarooturi, model, subject, property):
     values = get_values(model, subject, property)
     nick2people = get_nick2people()
     for value in values:
@@ -149,10 +149,10 @@ def friend_values(model, subject, property):
         elif value.is_resource():
             for nick,person in nick2people.items():
                 if str(value.uri) == person:
-                    user = "http://irc.sioc-project.org/users/%s#user" % nick
+                    user = datarooturi + "users/%s#user" % nick
                     yield """<a href="%s">%s</a>""" % html_escapes(user, nick)
 
-def nick_values(model, subject, properties):
+def nick_values(datarooturi, model, subject, properties):
     values = get_values(model, subject, properties)
     for value in values:
         if value is None:
@@ -161,12 +161,14 @@ def nick_values(model, subject, properties):
             uri = str(value.uri)
             for pattern in [
                 r"http://(irc.sioc-project.org)/users/(.+)#user",
+                r"(%s)users/(.+)#user" % re.escape(datarooturi),
                 r"irc://(freenode|freenode.net|irc.freenode.net)/(.+),isnick"]:
                 match = re.match(pattern, uri)
                 if match and match.group(0) == uri:
                     yield """
-<a href="http://irc.sioc-project.org/users/%s#user">%s</a>
-""" % html_escapes(match.groups()[1], match.groups()[1])
+<a href="%susers/%s#user">%s</a>
+""" % html_escapes(datarooturi, match.groups()[1], match.groups()[1])
+                    break
 
 def get_triples(model, subject, properties):
     for property in properties:
@@ -189,7 +191,7 @@ def render_user_index(sink, format, crumbs, datarooturi, datauri):
 
         users = []
         for nick in nicks:
-            user = "http://irc.sioc-project.org/users/%s#user" % nick
+            user = datarooturi + "users/%s#user" % nick
             users.append({'uri': user, 'nick': nick})
 
         context.addGlobal('users', users)
@@ -200,7 +202,7 @@ def render_user_index(sink, format, crumbs, datarooturi, datauri):
     elif format == "turtle":
         triples = []
         for nick in nicks:
-            user = "http://irc.sioc-project.org/users/%s#user" % nick
+            user = datarooturi + "users/%s#user" % nick
             triples += [None,
                         (freenodeURI, SIOC.space_of, user),
                         (user, RDFS.label, PlainLiteral(nick)),
@@ -216,7 +218,7 @@ def render_user_index(sink, format, crumbs, datarooturi, datauri):
         writer.close()
 
 def render_user(sink, format, crumbs, datarooturi, nick, datauri, latestsink):
-    userURI = "http://irc.sioc-project.org/users/%s#user" % nick
+    userURI = datarooturi + "users/%s#user" % nick
 
     global Red
     import RDF as Red
@@ -246,7 +248,7 @@ def render_user(sink, format, crumbs, datarooturi, nick, datauri, latestsink):
         if person:
             for name in link_values(model, person, [FOAF.name, FOAF.firstName, FOAF.nick, RDFS.label]):
                 info.append({'key': 'Name', 'value': "%s" % name})
-            for ircnick in nick_values(model, person, [FOAF.holdsAccount]):
+            for ircnick in nick_values(datarooturi, model, person, [FOAF.holdsAccount]):
                 if userURI in ("%s" % ircnick):
                     ircnick = ircnick + " <em>[confirms the Web ID claim]</em>"
                 elif ircnick is None:
@@ -260,7 +262,7 @@ def render_user(sink, format, crumbs, datarooturi, nick, datauri, latestsink):
                 info.append({'key': 'Weblog', 'value': "%s" % weblog})
             for img in image_values(model, person, [FOAF.depiction, FOAF.img]):
                 info.append({'key': 'Image', 'value': "%s" % img})
-            for known in friend_values(model, person, [FOAF.knows]):
+            for known in friend_values(datarooturi, model, person, [FOAF.knows]):
                 info.append({'key': 'Knows', 'value': "%s" % known})
 
         context.addGlobal('here', {'nick': nick,
