@@ -287,7 +287,8 @@ class IrcServer(Irc):
             self.taxonomy_state = nick
             self.taxonomy_response = []
         elif (msg.startswith("End of \2") or 
-              msg.endswith("\2 is not registered.")):
+              msg.endswith("\2 is not registered.") or
+             msg.startswith("Syntax: TAXONOMY ")):
             self.taxonomy_cbs[0](self.taxonomy_response)
             self.taxonomy_cbs.pop(0)
             self.taxonomy_state = self.taxonomy_response = None
@@ -295,6 +296,15 @@ class IrcServer(Irc):
             key, rest = msg.split(" ", 1)
             value = rest.split(":", 1)[1][1:]
             self.taxonomy_response.append((self.taxonomy_state, key, value))
+
+    def irc_ERR_NOSUCHNICK(self, line):
+        if line.args[1] != "nickserv":
+            return False
+
+        self.taxonomy_cbs[0](self.taxonomy_response)
+        self.taxonomy_cbs.pop(0)
+        self.taxonomy_state = self.taxonomy_response = None
+        
 
 class IrcServerFactory(protocol.ClientFactory):
     """Factory that will create an IrcServer object per connection."""
