@@ -18,9 +18,7 @@ from vocabulary import namespaces, RDF, RDFS, OWL, DC, DCTERMS, XSD, FOAF, SIOC,
 from users import render_user, render_user_index, get_nick2people
 from styles import css_stylesheet
 
-def runcgi(logfiles):
-    # FIXME can't infer this from CGI info?
-    datarooturi = "http://irc.sioc-project.org/"
+def runcgi(datarooturi, logfiles):
 
     HTTP_HOST = os.environ.get('HTTP_HOST', "")
     SERVER_PORT = os.environ.get('SERVER_PORT', "")
